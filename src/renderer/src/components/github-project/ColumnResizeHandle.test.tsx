@@ -10,6 +10,7 @@ vi.mock('@/i18n/i18n', () => ({
 
 afterEach(cleanup)
 
+/** Fakes a laid-out width, since happy-dom reports offsetWidth as 0. */
 function stagePixelWidth(element: Element | null, px: number | undefined): void {
   if (element && px !== undefined) {
     Object.defineProperty(element, 'offsetWidth', { configurable: true, value: px })
@@ -18,6 +19,7 @@ function stagePixelWidth(element: Element | null, px: number | undefined): void 
 
 type OnResize = (field: string, width: number, nextField: string, nextWidth: number) => void
 
+/** Renders the handle between two cells, optionally staging their pixel widths. */
 function renderHandle(
   widths: { current: number; next: number; currentPx?: number; nextPx?: number } = {
     current: 2,

@@ -24,6 +24,7 @@ vi.mock('./editor-shortcuts', () => ({ installMonacoEditorFindShortcut: () => ()
 
 afterEach(cleanup)
 
+/** Renders an inactive cell of the given kind and returns its activation spy. */
 function renderCell(kind: 'code' | 'markdown'): { onActivate: ReturnType<typeof vi.fn> } {
   const onActivate = vi.fn()
   const cell: IpynbCell = {

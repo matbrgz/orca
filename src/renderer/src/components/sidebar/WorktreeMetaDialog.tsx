@@ -46,6 +46,7 @@ const EMPTY_SNAPSHOT: WorktreeMetaSnapshot = {
   prInput: ''
 }
 
+/** Edits a worktree's display name, linked issue/review and comment, reseeding the drafts on each open. */
 const WorktreeMetaDialog = React.memo(function WorktreeMetaDialog() {
   const activeModal = useAppStore((s) => s.activeModal)
   const modalData = useAppStore((s) => s.modalData)

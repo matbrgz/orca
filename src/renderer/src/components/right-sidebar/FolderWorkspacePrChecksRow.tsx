@@ -20,6 +20,7 @@ type FolderWorkspacePrChecksRowProps = {
   onLoadCheckDetails: (check: PRCheckDetail) => Promise<PRCheckRunDetails | null>
 }
 
+/** Expandable PR checks summary row, with an open-externally button kept outside the toggle. */
 export function FolderWorkspacePrChecksRow({
   row,
   expanded,

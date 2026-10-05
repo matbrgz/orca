@@ -10,6 +10,7 @@ type RichMarkdownEmojiMenuProps = {
   onClose: () => void
 }
 
+/** Floating emoji picker that inserts the chosen emoji at the rich editor's cursor. */
 export function RichMarkdownEmojiMenu({
   editor,
   left,

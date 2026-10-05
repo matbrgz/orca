@@ -56,7 +56,7 @@ export function IpynbCellSource(props: IpynbCellSourceProps): React.JSX.Element 
     setPressedAt(point)
     onActivate()
   }
-  // Why: Space must be consumed too, or it scrolls the notebook instead of opening the cell.
+  /** Opens the cell on Enter or Space; Space must be consumed, or it scrolls the notebook instead. */
   const activateOnKey = (event: React.KeyboardEvent): void => {
     if ((event.key === 'Enter' || event.key === ' ') && event.target === event.currentTarget) {
       event.preventDefault()

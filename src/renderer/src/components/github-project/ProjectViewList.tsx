@@ -63,6 +63,7 @@ type Props = {
   sourceSettings: Pick<GlobalSettings, 'activeRuntimeEnvironmentId'> | null | undefined
 }
 
+/** GitHub Project table view with per-scope persisted column widths. */
 export default function ProjectViewList({
   table,
   onOpenDialog,
@@ -105,6 +106,7 @@ export default function ProjectViewList({
   >({})
   const widths = widthsByScope[scopeKey] ?? persistedWidths
 
+  /** Stores a resized adjacent pair for this scope, rounded and clamped so their total holds. */
   const setColumnPair = useCallback(
     (fieldId: string, width: number, nextFieldId: string, nextWidth: number): void => {
       setWidthsByScope((prev) => {

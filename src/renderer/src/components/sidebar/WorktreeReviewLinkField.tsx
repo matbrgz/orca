@@ -11,6 +11,7 @@ type WorktreeReviewLinkFieldProps = {
   value: string
 }
 
+/** Labelled GitHub PR / GitLab MR link input for the worktree meta dialog. */
 export function WorktreeReviewLinkField({
   inputRef,
   onKeyDown,

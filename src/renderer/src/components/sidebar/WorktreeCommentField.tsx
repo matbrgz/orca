@@ -10,6 +10,7 @@ type WorktreeCommentFieldProps = {
   onKeyDown: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
 }
 
+/** Labelled markdown comment textarea for the worktree meta dialog. */
 export function WorktreeCommentField({
   textareaRef,
   value,
