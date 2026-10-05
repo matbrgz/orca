@@ -13,6 +13,13 @@ type Props = {
   onResize: (fieldId: string, width: number, nextFieldId: string, nextWidth: number) => void
 }
 
+/** Rendered pixel width of the handle's cell plus the next cell. */
+function measurePairPxOf(handle: HTMLElement | null): number {
+  const cell = handle?.parentElement
+  const nextCell = cell?.nextElementSibling as HTMLElement | null
+  return (cell?.offsetWidth ?? 0) + (nextCell?.offsetWidth ?? 0)
+}
+
 /**
  * Stored widths are `fr` weights, not pixels — that's what keeps the
  * grid fitting its container exactly. Drag math has to happen in pixels (the
@@ -30,7 +37,8 @@ export default function ColumnResizeHandle({
   onResize
 }: Props): React.JSX.Element {
   const [dragging, setDragging] = useState(false)
-  // Pair pixel width measured on focus so the ARIA limits match the keyboard clamp.
+  const [focused, setFocused] = useState(false)
+  // Pair pixel width tracked while focused so the ARIA limits match the keyboard clamp.
   const [focusPairPx, setFocusPairPx] = useState(0)
   const handleRef = useRef<HTMLDivElement | null>(null)
   const dragRef = useRef<{
@@ -77,26 +85,39 @@ export default function ColumnResizeHandle({
     }
   }, [dragging, fieldId, nextFieldId, onResize])
 
-  const totalFr = currentWidth + nextWidth
-
-  const measurePairPx = (): number => {
+  useEffect(() => {
     const cell = handleRef.current?.parentElement
-    const nextCell = cell?.nextElementSibling as HTMLElement | null
-    return (cell?.offsetWidth ?? 0) + (nextCell?.offsetWidth ?? 0)
-  }
+    if (!focused || !cell || typeof ResizeObserver === 'undefined') {
+      return
+    }
+    // Why: observe only while focused; the range is announced only then.
+    const observer = new ResizeObserver(() => setFocusPairPx(measurePairPxOf(handleRef.current)))
+    observer.observe(cell)
+    if (cell.nextElementSibling) {
+      observer.observe(cell.nextElementSibling)
+    }
+    return () => observer.disconnect()
+  }, [focused])
+
+  const totalFr = currentWidth + nextWidth
 
   /** Arrow-key step in `fr` directly; the pixel floor converts to `fr` only once laid out. */
   const nudgeWidth = (direction: -1 | 1): void => {
     if (totalFr <= 0) {
       return
     }
-    const minFr = keyboardResizeFloor(totalFr, measurePairPx(), KEYBOARD_RESIZE_STEP_FRACTION)
+    const minFr = keyboardResizeFloor(
+      totalFr,
+      measurePairPxOf(handleRef.current),
+      KEYBOARD_RESIZE_STEP_FRACTION
+    )
     if (minFr * 2 >= totalFr) {
       return
     }
     const proposedFrA = currentWidth + direction * totalFr * KEYBOARD_RESIZE_STEP_FRACTION
     const newFrA = Math.max(minFr, Math.min(totalFr - minFr, proposedFrA))
-    if (newFrA === currentWidth) {
+    // Why: a stored split past the live clamp would otherwise snap back against the pressed arrow.
+    if ((newFrA - currentWidth) * direction <= 0) {
       return
     }
     onResize(fieldId, newFrA, nextFieldId, totalFr - newFrA)
@@ -143,10 +164,12 @@ export default function ColumnResizeHandle({
         nudgeWidth(e.key === 'ArrowLeft' ? -1 : 1)
       }}
       onFocus={(e) => {
-        setFocusPairPx(measurePairPx())
+        setFocusPairPx(measurePairPxOf(handleRef.current))
+        setFocused(true)
         e.currentTarget.style.background = 'rgba(59,130,246,0.25)'
       }}
       onBlur={(e) => {
+        setFocused(false)
         if (!dragging) {
           e.currentTarget.style.background = 'transparent'
         }

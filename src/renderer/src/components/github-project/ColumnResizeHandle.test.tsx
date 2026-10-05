@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import ColumnResizeHandle from './ColumnResizeHandle'
 
@@ -130,6 +130,67 @@ describe('ColumnResizeHandle keyboard resizing', () => {
       expect(handle.getAttribute('aria-valuenow')).toBe(now)
     }
   )
+
+  it('does not move against the pressed arrow when the stored split exceeds the live clamp', () => {
+    // 280fr at 200px: the clamp is 84–196fr, so 220fr sits past the right edge.
+    const { onResize, handle } = renderHandle({
+      current: 220,
+      next: 60,
+      currentPx: 100,
+      nextPx: 100
+    })
+
+    fireEvent.keyDown(handle, { key: 'ArrowRight' })
+    expect(onResize).not.toHaveBeenCalled()
+
+    fireEvent.keyDown(handle, { key: 'ArrowLeft' })
+    expect(onResize).toHaveBeenCalledWith('title', 196, 'status', 84)
+  })
+
+  it('updates the announced range when the pair is relaid out while focused', () => {
+    const observers = new Set<MockResizeObserver>()
+    /** Records observed cells so the test can fire a relayout by hand. */
+    class MockResizeObserver implements ResizeObserver {
+      readonly elements = new Set<Element>()
+      constructor(readonly callback: ResizeObserverCallback) {
+        observers.add(this)
+      }
+      observe(element: Element): void {
+        this.elements.add(element)
+      }
+      unobserve(element: Element): void {
+        this.elements.delete(element)
+      }
+      disconnect(): void {
+        this.elements.clear()
+        observers.delete(this)
+      }
+    }
+    vi.stubGlobal('ResizeObserver', MockResizeObserver)
+    try {
+      // 200fr at 400px: the 60fr stored floor wins, so the range is 30–70%.
+      const { handle } = renderHandle({ current: 140, next: 60, currentPx: 280, nextPx: 120 })
+      fireEvent.focus(handle)
+      expect(handle.getAttribute('aria-valuemin')).toBe('30')
+
+      // Relaid out at 150px: the 60px floor is 80fr, so the range narrows to 40–60%.
+      stagePixelWidth(screen.getByTestId('cell'), 100)
+      stagePixelWidth(screen.getByTestId('next-cell'), 50)
+      act(() => {
+        for (const observer of observers) {
+          observer.callback([], observer)
+        }
+      })
+
+      expect(handle.getAttribute('aria-valuemin')).toBe('40')
+      expect(handle.getAttribute('aria-valuemax')).toBe('60')
+
+      fireEvent.blur(handle)
+      expect(observers.size).toBe(0)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
 
   it('ignores keys that are not a resize gesture', () => {
     const { onResize, handle } = renderHandle()
