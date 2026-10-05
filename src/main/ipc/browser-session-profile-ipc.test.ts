@@ -68,6 +68,7 @@ describe('browser session profile IPC', () => {
     setTrustedBrowserRendererWebContentsId(91)
   })
 
+  /** Sender matching the renderer id pinned in beforeEach. */
   function trustedSender(): Electron.WebContents {
     return {
       id: 91,

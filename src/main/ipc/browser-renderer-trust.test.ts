@@ -4,6 +4,7 @@ import {
   setTrustedBrowserRendererWebContentsId
 } from './browser-renderer-trust'
 
+/** Packaged main-window sender stub (id 7, file:// URL); `overrides` replaces single members. */
 function makeSender(overrides: Partial<Record<string, unknown>> = {}): Electron.WebContents {
   const sender = {
     id: 7,
