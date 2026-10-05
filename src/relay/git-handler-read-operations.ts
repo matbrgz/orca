@@ -92,6 +92,7 @@ export class GitHandlerReadOperations extends GitHandlerOperationContext {
     return result
   }
 
+  /** Loads commit history on the relay host; any scope other than `all` falls back to `current`. */
   async history(params: Record<string, unknown>, context?: RequestContext) {
     const worktreePath = params.worktreePath as string
     const result = await loadGitHistoryFromExecutor(

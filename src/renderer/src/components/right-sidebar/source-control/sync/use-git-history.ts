@@ -6,6 +6,7 @@ import type { GitHistoryPanelState } from './git-history-panel'
 
 const EMPTY_GIT_HISTORY_STATE: GitHistoryPanelState = { status: 'idle' }
 
+/** Drops entries for worktrees no longer in the map, keeping the same reference when nothing goes. */
 function keepTrackedWorktrees<T>(
   record: Record<string, T>,
   worktreeMap: ReadonlyMap<string, unknown>
@@ -164,6 +165,7 @@ export function useSourceControlGitHistory({
     worktreePath
   ])
 
+  /** Switches the active worktree's scope, or re-requests it when an older host answered another scope. */
   const setGitHistoryScope = useCallback(
     (scope: GitHistoryScope): void => {
       if (!activeWorktreeId || (scope === requestedScope && scope === gitHistoryScope)) {

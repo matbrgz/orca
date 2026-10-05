@@ -37,6 +37,7 @@ import { getWorktreeSharedLinkPaths } from '../../git/worktree-shared-directorie
 import { applyGitStatusUpstreamRefWatchRequest } from '../git-status-upstream-ref-watch-request'
 import type { FilesystemHandlerContext } from './filesystem-handler-context'
 
+/** Registers the read-side git IPC (status, diff, history, conflicts, ignore), routing SSH worktrees to their provider. */
 export function registerFilesystemGitStatusHandlers(context: FilesystemHandlerContext): void {
   const { store, gitStatusCancellations } = context
   ipcMain.handle(

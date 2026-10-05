@@ -165,6 +165,7 @@ async function resolveNamedRef(
   return revision ? gitHistoryRefFromFullName(fullName, normalized, revision) : undefined
 }
 
+/** Loads the commit graph for HEAD or all named refs, echoing the scope it actually walked. */
 export async function loadGitHistoryFromExecutor(
   git: GitHistoryExecutor,
   cwd: string,

@@ -45,6 +45,7 @@ function clampGitHistoryPanelHeight(height: number): number {
   return Math.min(MAX_GIT_HISTORY_PANEL_HEIGHT, Math.max(MIN_GIT_HISTORY_PANEL_HEIGHT, height))
 }
 
+/** Collapsible commit history dock with the branch scope toggle above the commit graph. */
 export function GitHistoryPanel({
   state,
   collapsed,

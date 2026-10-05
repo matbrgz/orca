@@ -2,6 +2,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { translate } from '@/i18n/i18n'
 import type { GitHistoryScope } from '../../../../../../shared/git-history'
 
+/** Current-branch / all-branches toggle; ignores the empty value Radix emits when the active item is re-clicked. */
 export function GitHistoryScopeControl({
   scope,
   onScopeChange
