@@ -6,13 +6,13 @@ const read = (relative: string): string =>
 
 const mainCss = read('../../assets/main.css')
 
-type Rgb = [number, number, number]
+type Rgb = number[]
 
 function parseColor(value: string): { rgb: Rgb; alpha: number } {
   const hex = value.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/)
   if (hex) {
     const digits = hex[1].length === 3 ? hex[1].replace(/./g, '$&$&') : hex[1]
-    const rgb = [0, 2, 4].map((i) => Number.parseInt(digits.slice(i, i + 2), 16)) as Rgb
+    const rgb = [0, 2, 4].map((i) => Number.parseInt(digits.slice(i, i + 2), 16))
     return { rgb, alpha: 1 }
   }
   const rgbFn = value.match(/^rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\)$/)
@@ -23,7 +23,7 @@ function parseColor(value: string): { rgb: Rgb; alpha: number } {
 }
 
 function over(top: Rgb, alpha: number, bottom: Rgb): Rgb {
-  return top.map((c, i) => c * alpha + bottom[i] * (1 - alpha)) as Rgb
+  return top.map((c, i) => c * alpha + bottom[i] * (1 - alpha))
 }
 
 // WCAG 2.x relative luminance.
