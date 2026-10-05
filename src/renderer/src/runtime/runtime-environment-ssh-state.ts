@@ -81,6 +81,7 @@ async function syncEnvironmentRemovedSshTargetLabels(
   }
 }
 
+/** Seeds each target's connection state from the HUB, dropping results from a superseded generation. */
 async function fetchEnvironmentSshConnectionStates(
   environmentId: string,
   targets: readonly SshTargetSummary[],
