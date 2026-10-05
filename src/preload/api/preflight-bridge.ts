@@ -32,6 +32,7 @@ export const preflightApi = {
     ipcRenderer.invoke('preflight:zcodeInteractiveCapability'),
   refreshAgents: (args?: PreflightRuntimeContext): Promise<RefreshAgentsResult> =>
     ipcRenderer.invoke('preflight:refreshAgents', args),
+  /** Null when the SSH host is unreachable, distinct from [] (reached, none installed). */
   detectRemoteAgents: (args: { connectionId: string }): Promise<string[] | null> =>
     ipcRenderer.invoke('preflight:detectRemoteAgents', args),
   detectRemoteWindowsTerminalCapabilities: (args: {

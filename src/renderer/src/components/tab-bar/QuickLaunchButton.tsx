@@ -100,6 +100,7 @@ async function waitForTerminalPty(tabId: string, timeoutMs: number): Promise<boo
   return getTerminalLaunchState(tabId).hasPty
 }
 
+/** Agent launch menu items, with a placeholder that tells pending, unreachable and empty apart. */
 function QuickLaunchAgentMenuItemsInner({
   worktreeId,
   groupId,

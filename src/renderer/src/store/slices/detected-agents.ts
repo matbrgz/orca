@@ -28,6 +28,7 @@ export function _getRemoteDetectPromiseCountForTest(): number {
   return remoteDetectPromises.size
 }
 
+/** Detected-agent cache for local, SSH and runtime hosts, with in-flight probe dedupe. */
 export const createDetectedAgentsSlice: StateCreator<AppState, [], [], DetectedAgentsSlice> = (
   set,
   get,
@@ -37,6 +38,7 @@ export const createDetectedAgentsSlice: StateCreator<AppState, [], [], DetectedA
   remoteDetectedAgentIds: {},
   isDetectingRemoteAgents: {},
 
+  /** Cached SSH agents or a fresh probe; on failure, the last known ids, dropping a cached []. */
   ensureRemoteDetectedAgents: (connectionId: string, options?: { force?: boolean }) => {
     const existing = get().remoteDetectedAgentIds[connectionId]
     // Why: an empty result ([]) is truthy, so a prior "no agents found" detection

@@ -18,6 +18,7 @@ import type {
 export * from '../preflight/agent-detection'
 import { readZCodeInteractiveCapability } from '../zcode/interactive-capability'
 
+/** Registers the preflight IPC handlers: checks, agent detection and remote host capabilities. */
 export function registerPreflightHandlers(): void {
   ipcMain.handle(
     'preflight:check',

@@ -34,6 +34,7 @@ type StartupEnvironment = {
   launchSource?: string
 }
 
+/** Agent and startup launch for a linked draft; null when the draft is empty or shell-only. */
 export async function buildWorktreeStartupForDraft(
   environment: StartupEnvironment & { draft: string; requestedAgent?: TuiAgent }
 ): Promise<{
