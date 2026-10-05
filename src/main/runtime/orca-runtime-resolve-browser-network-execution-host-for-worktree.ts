@@ -173,12 +173,13 @@ export class OrcaRuntimeWithResolveBrowserNetworkExecutionHostForWorktree extend
     for (const key of AGENT_HOOK_RUNTIME_ENV_KEYS) {
       delete cleanBaseEnv[key]
     }
-    const jcodeRuntimeDirEnv =
-      scope.connectionId === null ? await ensureJcodeRuntimeDir(paneKey) : undefined
+    const isLocal = scope.connectionId === null
+    const jcodeRuntimeDirEnv = isLocal ? await ensureJcodeRuntimeDir(paneKey) : undefined
     const env = {
       ...cleanBaseEnv,
       ...agentTeamsEnv,
-      ...this.buildAgentHookPtyEnv?.(),
+      // Why: loopback port/token and a local endpoint path; SSH hosts get their own from the relay hook server.
+      ...(isLocal ? this.buildAgentHookPtyEnv?.() : undefined),
       // Why: the runtime dir is a local unix-socket path; remote (SSH)
       // terminals must keep jcode on its own guest-side default daemon.
       ...jcodeRuntimeDirEnv,
