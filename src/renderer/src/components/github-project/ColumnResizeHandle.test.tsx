@@ -10,17 +10,38 @@ vi.mock('@/i18n/i18n', () => ({
 
 afterEach(cleanup)
 
-function renderHandle(): { onResize: ReturnType<typeof vi.fn>; handle: HTMLElement } {
-  const onResize = vi.fn()
-  render(
-    <ColumnResizeHandle
-      fieldId="title"
-      nextFieldId="status"
-      currentWidth={2}
-      nextWidth={2}
-      onResize={onResize}
-    />
+function stagePixelWidth(element: Element | null, px: number | undefined): void {
+  if (element && px !== undefined) {
+    Object.defineProperty(element, 'offsetWidth', { configurable: true, value: px })
+  }
+}
+
+type OnResize = (field: string, width: number, nextField: string, nextWidth: number) => void
+
+function renderHandle(
+  widths: { current: number; next: number; currentPx?: number; nextPx?: number } = {
+    current: 2,
+    next: 2
+  }
+): { onResize: ReturnType<typeof vi.fn<OnResize>>; handle: HTMLElement } {
+  const onResize = vi.fn<OnResize>()
+  const { container } = render(
+    <div>
+      <div data-testid="cell">
+        <ColumnResizeHandle
+          fieldId="title"
+          nextFieldId="status"
+          currentWidth={widths.current}
+          nextWidth={widths.next}
+          onResize={onResize}
+        />
+      </div>
+      <div data-testid="next-cell" />
+    </div>
   )
+  // happy-dom lays nothing out, so stage the rendered pixel widths the handle measures.
+  stagePixelWidth(container.querySelector('[data-testid="cell"]'), widths.currentPx)
+  stagePixelWidth(container.querySelector('[data-testid="next-cell"]'), widths.nextPx)
   return { onResize, handle: screen.getByRole('separator', { name: 'Resize column' }) }
 }
 
@@ -46,15 +67,24 @@ describe('ColumnResizeHandle keyboard resizing', () => {
     fireEvent.keyDown(handle, { key })
 
     expect(onResize).toHaveBeenCalledTimes(1)
-    const [field, width, nextField, nextWidth] = onResize.mock.calls[0] as [
-      string,
-      number,
-      string,
-      number
-    ]
+    const [field, width, nextField, nextWidth] = onResize.mock.calls[0]
     expect([field, nextField]).toEqual(['title', 'status'])
     expect(width).toBeCloseTo(expected, 6)
     expect(width + nextWidth).toBeCloseTo(4, 6)
+  })
+
+  it('floors the shrinking column at the measured pixel minimum', () => {
+    // 1px per fr: the 60px floor is 60fr, so a 10fr step from 65 stops at 60.
+    const { onResize, handle } = renderHandle({
+      current: 65,
+      next: 135,
+      currentPx: 65,
+      nextPx: 135
+    })
+
+    fireEvent.keyDown(handle, { key: 'ArrowLeft' })
+
+    expect(onResize).toHaveBeenCalledWith('title', 60, 'status', 140)
   })
 
   it('ignores keys that are not a resize gesture', () => {
