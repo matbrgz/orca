@@ -165,6 +165,31 @@ async function resolveNamedRef(
   return revision ? gitHistoryRefFromFullName(fullName, normalized, revision) : undefined
 }
 
+/** Runs the bounded topo-order log over `revisions`, fetching one extra record to detect more. */
+async function runHistoryLog(
+  git: GitHistoryExecutor,
+  cwd: string,
+  limit: number,
+  revisions: readonly string[]
+): Promise<Pick<GitHistoryResult, 'items' | 'hasMore'>> {
+  const { stdout } = await git(
+    [
+      'log',
+      '--no-show-signature',
+      '--no-color',
+      `--format=${GIT_HISTORY_COMMIT_FORMAT}`,
+      '-z',
+      '--topo-order',
+      '--decorate=full',
+      `-n${limit + 1}`,
+      ...revisions
+    ],
+    cwd
+  )
+  const parsed = parseGitHistoryLog(stdout)
+  return { items: parsed.slice(0, limit), hasMore: parsed.length > limit }
+}
+
 /** Loads the commit graph for HEAD or all named refs, echoing the scope it actually walked. */
 export async function loadGitHistoryFromExecutor(
   git: GitHistoryExecutor,
@@ -175,14 +200,16 @@ export async function loadGitHistoryFromExecutor(
   const scope = options.scope === 'all' ? 'all' : 'current'
   const headOid = await resolveCommit(git, cwd, 'HEAD')
   if (!headOid) {
-    return {
-      items: [],
-      hasIncomingChanges: false,
-      hasOutgoingChanges: false,
-      hasMore: false,
-      limit,
-      scope
-    }
+    // Why: an unborn HEAD (fresh repo or orphan checkout) has no current history, but other
+    // branches, remotes and tags may still exist for the all scope to list.
+    const { items, hasMore } =
+      scope === 'all'
+        ? await runHistoryLog(git, cwd, limit, ['--branches', '--remotes', '--tags']).catch(() => ({
+            items: [],
+            hasMore: false
+          }))
+        : { items: [], hasMore: false }
+    return { items, hasIncomingChanges: false, hasOutgoingChanges: false, hasMore, limit, scope }
   }
 
   const { currentRef, branchName } = await resolveCurrentRef(git, cwd, headOid)
@@ -212,22 +239,7 @@ export async function loadGitHistoryFromExecutor(
     }
   }
 
-  const { stdout } = await git(
-    [
-      'log',
-      '--no-show-signature',
-      '--no-color',
-      `--format=${GIT_HISTORY_COMMIT_FORMAT}`,
-      '-z',
-      '--topo-order',
-      '--decorate=full',
-      `-n${limit + 1}`,
-      ...historyRevisions
-    ],
-    cwd
-  )
-  const parsed = parseGitHistoryLog(stdout)
-  const items = parsed.slice(0, limit)
+  const { items, hasMore } = await runHistoryLog(git, cwd, limit, historyRevisions)
   const hasIncomingChanges =
     Boolean(remoteRef?.revision && mergeBase) && remoteRef?.revision !== mergeBase
   const hasOutgoingChanges =
@@ -242,7 +254,7 @@ export async function loadGitHistoryFromExecutor(
     mergeBase,
     hasIncomingChanges,
     hasOutgoingChanges,
-    hasMore: parsed.length > limit,
+    hasMore,
     limit,
     scope
   }
