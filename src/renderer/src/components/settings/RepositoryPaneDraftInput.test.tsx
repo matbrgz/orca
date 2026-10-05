@@ -128,6 +128,33 @@ describe('RepoSettingsDraftInput', () => {
     expect(getInput().value).toBe('가나')
   })
 
+  it('keeps draft text on a stale echo when React runs state updaters twice', () => {
+    const onTextChange = vi.fn()
+    // Why: StrictMode double-invokes updaters, as React may in concurrent rendering.
+    const renderStrict = (storeValue: string): void => {
+      act(() => {
+        root.render(
+          React.createElement(
+            React.StrictMode,
+            null,
+            React.createElement(RepoSettingsDraftInput, {
+              repoId: 'repo-1',
+              storeValue,
+              onTextChange
+            })
+          )
+        )
+      })
+    }
+    renderStrict('')
+
+    typeText('가')
+    typeText('가나')
+    renderStrict('가')
+
+    expect(getInput().value).toBe('가나')
+  })
+
   it('accepts same-repo store changes that did not come from the input draft', () => {
     const onTextChange = vi.fn()
     render({ repoId: 'repo-1', storeValue: '../custom-worktrees', onTextChange })
