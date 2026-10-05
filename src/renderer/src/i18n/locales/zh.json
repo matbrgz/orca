@@ -3204,7 +3204,9 @@
                 "b4cf68e889": "已跳过 {{value0}} {{value1}}。",
                 "writeTimeout": "文件拖放已取消：终端在安全超时前未接受路径。",
                 "writeRejected": "文件拖放已取消：终端无法接受路径。",
-                "uploadingFilesToRemote": "正在上传 {{value0}} 文件{{value1}} 到远程..."
+                "uploadingFilesToRemote": "正在上传 {{count}} 个文件到远程...",
+                "uploadingFilesToRemote_one": "正在上传 {{count}} 个文件到远程...",
+                "uploadingFilesToRemote_other": "正在上传 {{count}} 个文件到远程..."
               }
             }
           },

@@ -3204,7 +3204,9 @@
                 "b4cf68e889": "{{value0}} {{value1}} をスキップしました。",
                 "writeTimeout": "ファイルドロップをキャンセルしました: 安全タイムアウト前にターミナルがパスを受け付けませんでした。",
                 "writeRejected": "ファイルドロップをキャンセルしました: ターミナルがパスを受け付けられませんでした。",
-                "uploadingFilesToRemote": "{{value0}} ファイル{{value1}} をリモートにアップロードしています…"
+                "uploadingFilesToRemote": "{{count}} 個のファイルをリモートにアップロードしています…",
+                "uploadingFilesToRemote_one": "{{count}} 個のファイルをリモートにアップロードしています…",
+                "uploadingFilesToRemote_other": "{{count}} 個のファイルをリモートにアップロードしています…"
               }
             }
           },

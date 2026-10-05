@@ -3326,7 +3326,9 @@
                 "b4cf68e889": "Ignoré : {{value0}} {{value1}}.",
                 "writeTimeout": "Glisser-déposer de fichiers annulé : le terminal n'a pas accepté le chemin avant le délai de sécurité.",
                 "writeRejected": "Glisser-déposer de fichiers annulé : le terminal n'a pas pu accepter le chemin.",
-                "uploadingFilesToRemote": "Envoi de {{value0}} fichier{{value1}} vers l'hôte distant…"
+                "uploadingFilesToRemote": "Envoi de {{count}} fichiers vers l'hôte distant…",
+                "uploadingFilesToRemote_one": "Envoi de {{count}} fichier vers l'hôte distant…",
+                "uploadingFilesToRemote_other": "Envoi de {{count}} fichiers vers l'hôte distant…"
               }
             }
           },

@@ -3426,7 +3426,9 @@
                 "b4cf68e889": "Skipped {{value0}} {{value1}}.",
                 "writeTimeout": "File drop cancelled: terminal did not accept the path before the safety timeout.",
                 "writeRejected": "File drop cancelled: terminal could not accept the path.",
-                "uploadingFilesToRemote": "Uploading {{value0}} file{{value1}} to remote…"
+                "uploadingFilesToRemote": "Uploading {{count}} files to remote…",
+                "uploadingFilesToRemote_one": "Uploading {{count}} file to remote…",
+                "uploadingFilesToRemote_other": "Uploading {{count}} files to remote…"
               }
             }
           },

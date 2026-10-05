@@ -2510,6 +2510,14 @@
           "TerminalSshReconnectOverlay": {
             "connectButton": "Connect",
             "connectingButton": "Connecting..."
+          },
+          "terminal": {
+            "drop": {
+              "handler": {
+                "uploadingFilesToRemote_one": "Uploading {{count}} file to remote…",
+                "uploadingFilesToRemote_other": "Uploading {{count}} files to remote…"
+              }
+            }
           }
         },
         "quick": {
