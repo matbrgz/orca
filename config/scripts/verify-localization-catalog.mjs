@@ -192,6 +192,18 @@ function collectReusedFallbackKeys(references) {
     .map(([key, keyReferences]) => ({ key, references: keyReferences }))
 }
 
+/** Prints keys reused for different fallback text; returns true when any exist. */
+function reportReusedFallbackKeys(references) {
+  const reusedFallbackKeys = collectReusedFallbackKeys(references)
+  if (reusedFallbackKeys.length === 0) {
+    return false
+  }
+  console.error('Localization keys are reused for different fallback text; give each its own key.')
+  console.error('')
+  console.error(formatFallbackReferenceGroups(reusedFallbackKeys))
+  return true
+}
+
 function collectInconsistentFallbackVariables(references) {
   return [...groupFallbackReferencesByKey(references).entries()]
     .map(([key, keyReferences]) => {
@@ -493,6 +505,11 @@ export async function main(
   let catalogKeys = new Set(flattenCatalogKeys(catalog))
   const references = sharedReferences ?? (await collectLocalizationReferences(root))
 
+  // Why: runs before --fix so an ambiguous key never gets its first sentence written to en.json.
+  if (reportReusedFallbackKeys(references)) {
+    return 1
+  }
+
   const missing = references.filter((reference) => !catalogKeys.has(reference.key))
   if (missing.length > 0) {
     const missingFallbacks = referencesMissingFallbacks(missing)
@@ -530,16 +547,6 @@ export async function main(
     console.error('Localization keys are used with inconsistent interpolation placeholders.')
     console.error('')
     console.error(formatFallbackReferenceGroups(inconsistentFallbackVariables))
-    return 1
-  }
-
-  const reusedFallbackKeys = collectReusedFallbackKeys(references)
-  if (reusedFallbackKeys.length > 0) {
-    console.error(
-      'Localization keys are reused for different fallback text; give each its own key.'
-    )
-    console.error('')
-    console.error(formatFallbackReferenceGroups(reusedFallbackKeys))
     return 1
   }
 

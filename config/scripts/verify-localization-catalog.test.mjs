@@ -114,6 +114,21 @@ describe('verify-localization-catalog', () => {
     error.mockRestore()
   })
 
+  it('refuses to --fix a missing key reused for two different sentences', async () => {
+    const { root, localesDir } = makeProject({
+      sourceText:
+        "import { translate } from '@/i18n/i18n'\nexport const left = translate('auto.example.move', 'Move left')\nexport const right = translate('auto.example.move', 'Move right')\n"
+    })
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    await expect(verifyLocalizationCatalog(root, { fix: true })).resolves.toBe(1)
+    expect(readJson(path.join(localesDir, 'en.json'))).toEqual({})
+    expect(error.mock.calls.flat().join('\n')).toContain('auto.example.move')
+    error.mockRestore()
+    log.mockRestore()
+  })
+
   it('accepts one key repeated with the same sentence', async () => {
     const { root } = makeProject({
       sourceText:
