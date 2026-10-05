@@ -8,6 +8,7 @@ import { useChecksListState } from './use-checks-list-state'
 
 afterEach(cleanup)
 
+/** Builds a completed check with the given conclusion. */
 function check(name: string, conclusion: PRCheckDetail['conclusion']): PRCheckDetail {
   return { name, status: 'completed', conclusion, url: null }
 }

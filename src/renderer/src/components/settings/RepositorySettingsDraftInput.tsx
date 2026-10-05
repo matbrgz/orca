@@ -4,10 +4,7 @@ import { Input } from '../ui/input'
 
 type RepoTextDraft = { repoId: string; text: string }
 
-// Why: updateRepo persists via async IPC before the store value updates, so a
-// store-controlled input resets mid-IME-composition (Hangul decomposes into
-// jamo). Keep keystrokes in local draft state; persist per-keystroke except
-// while an IME composition is active (see composingRef below).
+/** Keeps keystrokes in a local draft: a store-controlled input resets mid-IME composition on async updateRepo. */
 export function RepoSettingsDraftInput({
   repoId,
   storeValue,

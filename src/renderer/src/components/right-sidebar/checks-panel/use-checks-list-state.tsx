@@ -27,6 +27,7 @@ export type ChecksListProps = {
   githubRepository?: GitHubRepositoryIdentity | null
 }
 
+/** Sorted check rows with expand and lazy detail state; auto-expands the first failure once per context. */
 export function useChecksListState({
   checks,
   checkDetailsContextKey,

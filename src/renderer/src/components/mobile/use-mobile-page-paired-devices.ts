@@ -14,6 +14,7 @@ import {
 } from './paired-mobile-devices'
 import { translate } from '@/i18n/i18n'
 
+/** Paired-device list and pairing-flow stage for the mobile page, including per-device revoke. */
 export function useMobilePagePairedDevices({
   stepIdx,
   setStepIdx
@@ -121,6 +122,7 @@ export function useMobilePagePairedDevices({
     }
   }, [loadDevices, showPairedDevices, showStage])
 
+  /** Revokes one device, ignoring repeat clicks while that device's revoke is in flight. */
   const revokeDevice = useCallback(
     async (deviceId: string) => {
       // Dedupe rapid double-clicks: if a revoke for this id is already in

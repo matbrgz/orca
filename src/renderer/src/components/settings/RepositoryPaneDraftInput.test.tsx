@@ -130,7 +130,7 @@ describe('RepoSettingsDraftInput', () => {
 
   it('keeps draft text on a stale echo when React runs state updaters twice', () => {
     const onTextChange = vi.fn()
-    // Why: StrictMode double-invokes updaters, as React may in concurrent rendering.
+    /** Renders under StrictMode, which double-invokes updaters as concurrent rendering may. */
     const renderStrict = (storeValue: string): void => {
       act(() => {
         root.render(
