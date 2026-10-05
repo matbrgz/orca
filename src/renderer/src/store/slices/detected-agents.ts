@@ -73,9 +73,16 @@ export const createDetectedAgentsSlice: StateCreator<AppState, [], [], DetectedA
       .catch(() => {
         // Why: allow retry on next call (SSH may reconnect). Do not cache failure.
         if (remoteDetectPromises.get(connectionId) === pending) {
-          set((s) => ({
-            isDetectingRemoteAgents: { ...s.isDetectingRemoteAgents, [connectionId]: false }
-          }))
+          set((s) => {
+            const isDetectingRemoteAgents = { ...s.isDetectingRemoteAgents, [connectionId]: false }
+            // Why: a cached [] is re-probed on every call, so a failed probe outranks it;
+            // drop it so the UI reports unreachable. A non-empty list stays as last known.
+            if (s.remoteDetectedAgentIds[connectionId]?.length === 0) {
+              const { [connectionId]: _, ...remoteDetectedAgentIds } = s.remoteDetectedAgentIds
+              return { remoteDetectedAgentIds, isDetectingRemoteAgents }
+            }
+            return { isDetectingRemoteAgents }
+          })
         }
         return get().remoteDetectedAgentIds[connectionId] ?? ([] as TuiAgent[])
       })
