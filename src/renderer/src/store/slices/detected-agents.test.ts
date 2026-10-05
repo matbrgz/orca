@@ -605,7 +605,7 @@ describe('createDetectedAgentsSlice remote detection', () => {
     store.setState({ remoteDetectedAgentIds: { 'ssh-1': ['claude'] } } as Partial<AppState>)
     await expect(store.getState().refreshRemoteDetectedAgents('ssh-1')).resolves.toEqual(['claude'])
     expect(store.getState().remoteDetectedAgentIds['ssh-1']).toEqual(['claude'])
-    store.setState({ remoteDetectedAgentIds: { 'ssh-1': [] } } as Partial<AppState>)
+    store.setState({ remoteDetectedAgentIds: { 'ssh-1': [] } })
     await expect(store.getState().ensureRemoteDetectedAgents('ssh-1')).resolves.toEqual([])
     expect(store.getState().remoteDetectedAgentIds).not.toHaveProperty('ssh-1')
   })

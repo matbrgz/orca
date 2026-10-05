@@ -70,7 +70,7 @@ export const createDetectedAgentsSlice: StateCreator<AppState, [], [], DetectedA
         }
         return typed
       })
-      .catch(() => {
+      .catch((): TuiAgent[] => {
         // Why: allow retry on next call (SSH may reconnect). Do not cache failure.
         if (remoteDetectPromises.get(connectionId) === pending) {
           set((s) => {
@@ -84,7 +84,7 @@ export const createDetectedAgentsSlice: StateCreator<AppState, [], [], DetectedA
             return { isDetectingRemoteAgents }
           })
         }
-        return get().remoteDetectedAgentIds[connectionId] ?? ([] as TuiAgent[])
+        return get().remoteDetectedAgentIds[connectionId] ?? []
       })
       .finally(() => {
         // Why: this map is only for in-flight dedupe. Successful results live
