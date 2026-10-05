@@ -13,7 +13,15 @@ type Props = {
   onResize: (fieldId: string, width: number, nextFieldId: string, nextWidth: number) => void
 }
 
-/** Column splitter: drags in pixels, stores `fr` weights, and holds the pair's total so the table never grows. */
+/**
+ * Stored widths are `fr` weights, not pixels — that's what keeps the
+ * grid fitting its container exactly. Drag math has to happen in pixels (the
+ * mouse moves in pixels), so we measure the rendered widths of the two
+ * adjacent cells at drag start, compute the new pixel split, then convert
+ * back to fr weights with the pair's total weight held constant. Net effect:
+ * dragging redistributes width between the pair without changing the grid's
+ * total — the table never grows.
+ */
 export default function ColumnResizeHandle({
   fieldId,
   nextFieldId,
