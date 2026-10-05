@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type React from 'react'
 import {
   WORKSPACE_BOARD_COLUMN_WIDTH_STEP,
@@ -31,20 +31,23 @@ export function useWorkspaceKanbanColumnResize(
 
   commitWidthRef.current = onCommitWidth
   // Why: guard with state, not committedWidthRef, so a discarded render reverts it with the
-  // setColumnWidth it gates. The ref still mirrors the value for handlers.
+  // setColumnWidth it gates.
   const [lastCommittedWidth, setLastCommittedWidth] = useState(nextCommittedWidth)
   if (lastCommittedWidth !== nextCommittedWidth) {
     setLastCommittedWidth(nextCommittedWidth)
+    if (!resizingRef.current && columnWidth !== nextCommittedWidth) {
+      // Why: external width changes should be reflected before children
+      // render; during active drag the local draft remains authoritative.
+      setColumnWidth(nextCommittedWidth)
+    }
+  }
+  // Why: handler refs sync after commit; a render-phase write would survive a discarded render.
+  useLayoutEffect(() => {
     committedWidthRef.current = nextCommittedWidth
     if (!resizingRef.current) {
       draftWidthRef.current = nextCommittedWidth
-      if (columnWidth !== nextCommittedWidth) {
-        // Why: external width changes should be reflected before children
-        // render; during active drag the local draft remains authoritative.
-        setColumnWidth(nextCommittedWidth)
-      }
     }
-  }
+  }, [nextCommittedWidth])
 
   const resetDocumentStyles = useCallback(() => {
     document.body.style.cursor = ''

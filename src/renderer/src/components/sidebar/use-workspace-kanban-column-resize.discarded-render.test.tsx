@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
 
 import React, { Suspense } from 'react'
-import { act, cleanup, render, screen } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useWorkspaceKanbanColumnResize } from './use-workspace-kanban-column-resize'
 
 // A Suspense unwind discards the render without replaying it; StrictMode cannot show this.
@@ -21,11 +21,18 @@ function SuspendOnNewWidth({ width }: { width: number }): null {
   return null
 }
 
+const commitWidth = vi.fn()
+
 function ColumnProbe({ committedWidth }: { committedWidth: number }): React.JSX.Element {
-  const { columnWidth } = useWorkspaceKanbanColumnResize(committedWidth, () => {})
+  const { columnWidth, onColumnResizeKeyDown } = useWorkspaceKanbanColumnResize(
+    committedWidth,
+    commitWidth
+  )
   return (
     <>
-      <span data-testid="width">{columnWidth}</span>
+      <span data-testid="width" tabIndex={0} onKeyDown={onColumnResizeKeyDown}>
+        {columnWidth}
+      </span>
       <SuspendOnNewWidth width={committedWidth} />
     </>
   )
@@ -43,6 +50,7 @@ beforeEach(() => {
   settledWidths.clear()
   settledWidths.add(320)
   releasePending = null
+  commitWidth.mockReset()
 })
 
 afterEach(cleanup)
@@ -61,5 +69,17 @@ describe('useWorkspaceKanbanColumnResize external width', () => {
     })
 
     expect(screen.getByTestId('width').textContent).toBe('420')
+  })
+
+  it('resizes from the committed width after a discarded width change is reverted', () => {
+    const { rerender } = render(boundary(320))
+    rerender(boundary(420))
+    expect(screen.getByTestId('fallback')).toBeTruthy()
+    rerender(boundary(320))
+    expect(screen.getByTestId('width').textContent).toBe('320')
+
+    fireEvent.keyDown(screen.getByTestId('width'), { key: 'ArrowRight' })
+
+    expect(commitWidth).toHaveBeenCalledWith(340)
   })
 })
