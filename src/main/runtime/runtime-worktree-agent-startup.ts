@@ -63,7 +63,7 @@ export async function buildWorktreeStartupForDraft(
     try {
       // Why: startup-draft fallback can run from sparse runtime launch envs too.
       detected = sshConnectionId
-        ? await detectRemoteAgents({ connectionId: sshConnectionId })
+        ? ((await detectRemoteAgents({ connectionId: sshConnectionId })) ?? [])
         : await detectInstalledAgentsWithShellPathHydration()
     } catch {
       detected = []

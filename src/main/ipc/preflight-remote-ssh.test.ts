@@ -147,17 +147,17 @@ describe('preflight', () => {
     })
   })
 
-  it('returns no remote agents when the SSH connection is unavailable', async () => {
+  it('reports an unavailable SSH connection as unreachable, not as no agents', async () => {
     getActiveMultiplexerMock.mockReturnValue(null)
 
     registerPreflightHandlers()
 
     await expect(
       handlers['preflight:detectRemoteAgents'](undefined, { connectionId: 'ssh-1' })
-    ).resolves.toEqual([])
+    ).resolves.toBeNull()
   })
 
-  it('returns no remote agents when the SSH connection is disposed', async () => {
+  it('reports a disposed SSH connection as unreachable, not as no agents', async () => {
     const request = vi.fn()
     getActiveMultiplexerMock.mockReturnValue({
       isDisposed: () => true,
@@ -168,7 +168,7 @@ describe('preflight', () => {
 
     await expect(
       handlers['preflight:detectRemoteAgents'](undefined, { connectionId: 'ssh-1' })
-    ).resolves.toEqual([])
+    ).resolves.toBeNull()
     expect(request).not.toHaveBeenCalled()
   })
 

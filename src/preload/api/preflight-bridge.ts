@@ -32,7 +32,7 @@ export const preflightApi = {
     ipcRenderer.invoke('preflight:zcodeInteractiveCapability'),
   refreshAgents: (args?: PreflightRuntimeContext): Promise<RefreshAgentsResult> =>
     ipcRenderer.invoke('preflight:refreshAgents', args),
-  detectRemoteAgents: (args: { connectionId: string }): Promise<string[]> =>
+  detectRemoteAgents: (args: { connectionId: string }): Promise<string[] | null> =>
     ipcRenderer.invoke('preflight:detectRemoteAgents', args),
   detectRemoteWindowsTerminalCapabilities: (args: {
     connectionId: string

@@ -57,6 +57,10 @@ export const createDetectedAgentsSlice: StateCreator<AppState, [], [], DetectedA
     const pending = window.api.preflight
       .detectRemoteAgents({ connectionId })
       .then((ids) => {
+        if (ids === null) {
+          // Why: unreachable is not "no agents"; leave the cache unknown so the UI can say so.
+          throw new Error(`SSH connection ${connectionId} is not reachable`)
+        }
         const typed = ids as TuiAgent[]
         if (remoteDetectPromises.get(connectionId) === pending) {
           set((s) => ({
@@ -73,7 +77,7 @@ export const createDetectedAgentsSlice: StateCreator<AppState, [], [], DetectedA
             isDetectingRemoteAgents: { ...s.isDetectingRemoteAgents, [connectionId]: false }
           }))
         }
-        return [] as TuiAgent[]
+        return get().remoteDetectedAgentIds[connectionId] ?? ([] as TuiAgent[])
       })
       .finally(() => {
         // Why: this map is only for in-flight dedupe. Successful results live

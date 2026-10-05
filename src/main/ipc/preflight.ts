@@ -49,7 +49,7 @@ export function registerPreflightHandlers(): void {
   // the remote host so native Windows OpenSSH does not require a POSIX shell.
   ipcMain.handle(
     'preflight:detectRemoteAgents',
-    async (_event, args: { connectionId: string }): Promise<string[]> => {
+    async (_event, args: { connectionId: string }): Promise<string[] | null> => {
       return detectRemoteAgents(args)
     }
   )

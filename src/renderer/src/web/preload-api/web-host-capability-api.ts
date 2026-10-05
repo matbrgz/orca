@@ -81,8 +81,8 @@ export function createPreflightApi(): NonNullable<Partial<PreloadApi>['preflight
         : Promise.resolve(fallbackRefreshAgents),
     detectRemoteAgents: async (args) =>
       requireActiveEnvironmentOrNull()
-        ? callRuntimeResult<string[]>('preflight.detectRemoteAgents', args).catch(() => [])
-        : [],
+        ? callRuntimeResult<string[]>('preflight.detectRemoteAgents', args).catch(() => null)
+        : null,
     detectRemoteWindowsTerminalCapabilities: async (args) =>
       requireActiveEnvironmentOrNull()
         ? callRuntimeResult<WindowsTerminalCapabilityBridgeResult>(

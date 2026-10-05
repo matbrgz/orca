@@ -595,6 +595,19 @@ describe('createDetectedAgentsSlice remote detection', () => {
     expect(store.getState().remoteDetectedAgentIds['ssh-1']).toEqual(['kilo'])
   })
 
+  it('does not record an unreachable SSH host as a host with no agents', async () => {
+    const store = createTestStore()
+    detectRemoteAgents.mockResolvedValueOnce(null)
+    await expect(store.getState().ensureRemoteDetectedAgents('ssh-1')).resolves.toEqual([])
+    expect(store.getState().remoteDetectedAgentIds).not.toHaveProperty('ssh-1')
+    expect(store.getState().isDetectingRemoteAgents['ssh-1']).toBe(false)
+
+    store.setState({ remoteDetectedAgentIds: { 'ssh-1': ['claude'] } } as Partial<AppState>)
+    detectRemoteAgents.mockResolvedValueOnce(null)
+    await expect(store.getState().refreshRemoteDetectedAgents('ssh-1')).resolves.toEqual(['claude'])
+    expect(store.getState().remoteDetectedAgentIds['ssh-1']).toEqual(['claude'])
+  })
+
   it('detects runtime environment agents through the owning runtime', async () => {
     const store = createTestStore()
 
