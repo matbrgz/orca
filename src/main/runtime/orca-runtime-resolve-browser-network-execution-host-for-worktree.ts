@@ -162,6 +162,7 @@ export class OrcaRuntimeWithResolveBrowserNetworkExecutionHostForWorktree extend
     }
   }
 
+  /** PTY env for a workspace terminal; local-only hook and jcode values are withheld from SSH. */
   protected async buildTerminalWorkspaceEnv(
     scope: TerminalWorkspaceLaunchScope,
     baseEnv: Record<string, string>,
