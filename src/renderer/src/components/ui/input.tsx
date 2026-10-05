@@ -3,6 +3,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { ImeInput } from '@/lib/ime-text-field'
 
+/** Shared text input; placeholder uses full muted-foreground so it clears WCAG AA in both themes. */
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
   ({ className, type, ...props }, ref) => {
     return (

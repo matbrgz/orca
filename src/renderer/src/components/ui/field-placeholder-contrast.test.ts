@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
+/** Reads a source file relative to this test so the assertions track the shipped CSS and classes. */
 const read = (relative: string): string =>
   fs.readFileSync(new URL(relative, import.meta.url), 'utf8')
 
@@ -8,6 +9,7 @@ const mainCss = read('../../assets/main.css')
 
 type Rgb = number[]
 
+/** Parses the hex and `rgb(r g b / a)` literals main.css uses for theme tokens. */
 function parseColor(value: string): { rgb: Rgb; alpha: number } {
   const hex = value.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/)
   if (hex) {
@@ -22,11 +24,12 @@ function parseColor(value: string): { rgb: Rgb; alpha: number } {
   throw new Error(`unsupported color literal: ${value}`)
 }
 
+/** Alpha-composites `top` onto an opaque `bottom`, as the browser paints a translucent layer. */
 function over(top: Rgb, alpha: number, bottom: Rgb): Rgb {
   return top.map((c, i) => c * alpha + bottom[i] * (1 - alpha))
 }
 
-// WCAG 2.x relative luminance.
+/** WCAG 2.x relative luminance. */
 function luminance(rgb: Rgb): number {
   const [r, g, b] = rgb.map((channel) => {
     const c = channel / 255
@@ -35,6 +38,7 @@ function luminance(rgb: Rgb): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
+/** WCAG contrast ratio, independent of which color is lighter. */
 function contrastRatio(a: Rgb, b: Rgb): number {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
   return (hi + 0.05) / (lo + 0.05)
@@ -46,6 +50,7 @@ const themeBlocks = {
   dark: mainCss.slice(darkStart, mainCss.indexOf('\n}', darkStart))
 }
 
+/** Resolves a CSS custom property's literal value within one theme block. */
 function token(block: string, name: string): string {
   const match = block.match(new RegExp(`\\n\\s*${name}:\\s*([^;]+);`))
   if (!match) {
@@ -54,7 +59,7 @@ function token(block: string, name: string): string {
   return match[1].trim()
 }
 
-// Tailwind `/NN` opacity modifier on a class, or 100 when absent.
+/** Tailwind `/NN` opacity modifier on a class, or 100 when absent. */
 function classOpacity(source: string, utility: string): number {
   const match = source.match(new RegExp(`(?:^|[\\s'"])${utility}(?:/(\\d+))?(?=[\\s'"])`))
   if (!match) {
