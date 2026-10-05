@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { MIN_COLUMN_WIDTH } from './column-widths'
+import { keyboardResizeFloor, MIN_COLUMN_WIDTH } from './column-widths'
 import { translate } from '@/i18n/i18n'
 
 // One arrow-key press moves 5% of the adjacent pair's combined weight.
@@ -30,6 +30,8 @@ export default function ColumnResizeHandle({
   onResize
 }: Props): React.JSX.Element {
   const [dragging, setDragging] = useState(false)
+  // Pair pixel width measured on focus so the ARIA limits match the keyboard clamp.
+  const [focusPairPx, setFocusPairPx] = useState(0)
   const handleRef = useRef<HTMLDivElement | null>(null)
   const dragRef = useRef<{
     startX: number
@@ -77,23 +79,39 @@ export default function ColumnResizeHandle({
 
   const totalFr = currentWidth + nextWidth
 
+  const measurePairPx = (): number => {
+    const cell = handleRef.current?.parentElement
+    const nextCell = cell?.nextElementSibling as HTMLElement | null
+    return (cell?.offsetWidth ?? 0) + (nextCell?.offsetWidth ?? 0)
+  }
+
   /** Arrow-key step in `fr` directly; the pixel floor converts to `fr` only once laid out. */
   const nudgeWidth = (direction: -1 | 1): void => {
     if (totalFr <= 0) {
       return
     }
-    const cell = handleRef.current?.parentElement
-    const nextCell = cell?.nextElementSibling as HTMLElement | null
-    const totalPx = (cell?.offsetWidth ?? 0) + (nextCell?.offsetWidth ?? 0)
-    const minFr =
-      totalPx > 0 ? (totalFr * MIN_COLUMN_WIDTH) / totalPx : totalFr * KEYBOARD_RESIZE_STEP_FRACTION
+    const minFr = keyboardResizeFloor(totalFr, measurePairPx(), KEYBOARD_RESIZE_STEP_FRACTION)
     if (minFr * 2 >= totalFr) {
       return
     }
     const proposedFrA = currentWidth + direction * totalFr * KEYBOARD_RESIZE_STEP_FRACTION
     const newFrA = Math.max(minFr, Math.min(totalFr - minFr, proposedFrA))
+    if (newFrA === currentWidth) {
+      return
+    }
     onResize(fieldId, newFrA, nextFieldId, totalFr - newFrA)
   }
+
+  const ariaMinPercent =
+    totalFr > 0
+      ? Math.min(
+          50,
+          Math.round(
+            (keyboardResizeFloor(totalFr, focusPairPx, KEYBOARD_RESIZE_STEP_FRACTION) / totalFr) *
+              100
+          )
+        )
+      : 0
 
   return (
     <div
@@ -102,8 +120,8 @@ export default function ColumnResizeHandle({
       aria-orientation="vertical"
       tabIndex={0}
       aria-valuenow={totalFr > 0 ? Math.round((currentWidth / totalFr) * 100) : 50}
-      aria-valuemin={0}
-      aria-valuemax={100}
+      aria-valuemin={ariaMinPercent}
+      aria-valuemax={100 - ariaMinPercent}
       aria-label={translate(
         'auto.components.github.project.ColumnResizeHandle.1304289353',
         'Resize column'
@@ -117,6 +135,7 @@ export default function ColumnResizeHandle({
         nudgeWidth(e.key === 'ArrowLeft' ? -1 : 1)
       }}
       onFocus={(e) => {
+        setFocusPairPx(measurePairPx())
         e.currentTarget.style.background = 'rgba(59,130,246,0.25)'
       }}
       onBlur={(e) => {

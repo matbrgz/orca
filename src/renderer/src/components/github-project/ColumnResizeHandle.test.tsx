@@ -22,8 +22,8 @@ type OnResize = (field: string, width: number, nextField: string, nextWidth: num
 /** Renders the handle between two cells, optionally staging their pixel widths. */
 function renderHandle(
   widths: { current: number; next: number; currentPx?: number; nextPx?: number } = {
-    current: 2,
-    next: 2
+    current: 200,
+    next: 200
   }
 ): { onResize: ReturnType<typeof vi.fn<OnResize>>; handle: HTMLElement } {
   const onResize = vi.fn<OnResize>()
@@ -61,8 +61,8 @@ describe('ColumnResizeHandle keyboard resizing', () => {
   })
 
   it.each([
-    ['ArrowRight', 2.2],
-    ['ArrowLeft', 1.8]
+    ['ArrowRight', 220],
+    ['ArrowLeft', 180]
   ])('resizes the column pair on %s with the pair total held constant', (key, expected) => {
     const { onResize, handle } = renderHandle()
 
@@ -72,7 +72,7 @@ describe('ColumnResizeHandle keyboard resizing', () => {
     const [field, width, nextField, nextWidth] = onResize.mock.calls[0]
     expect([field, nextField]).toEqual(['title', 'status'])
     expect(width).toBeCloseTo(expected, 6)
-    expect(width + nextWidth).toBeCloseTo(4, 6)
+    expect(width + nextWidth).toBeCloseTo(400, 6)
   })
 
   it('floors the shrinking column at the measured pixel minimum', () => {
@@ -87,6 +87,30 @@ describe('ColumnResizeHandle keyboard resizing', () => {
     fireEvent.keyDown(handle, { key: 'ArrowLeft' })
 
     expect(onResize).toHaveBeenCalledWith('title', 60, 'status', 140)
+  })
+
+  it('stops at the stored fr floor even when the pixel floor is lower', () => {
+    // 2px per fr: the 60px floor is 30fr, but the store never keeps a weight under 60fr.
+    const { onResize, handle } = renderHandle({
+      current: 140,
+      next: 60,
+      currentPx: 280,
+      nextPx: 120
+    })
+
+    fireEvent.keyDown(handle, { key: 'ArrowRight' })
+
+    expect(onResize).not.toHaveBeenCalled()
+  })
+
+  it('exposes the same limits the keyboard clamp enforces', () => {
+    const { handle } = renderHandle({ current: 140, next: 60, currentPx: 280, nextPx: 120 })
+
+    fireEvent.focus(handle)
+
+    expect(handle.getAttribute('aria-valuemin')).toBe('30')
+    expect(handle.getAttribute('aria-valuemax')).toBe('70')
+    expect(handle.getAttribute('aria-valuenow')).toBe('70')
   })
 
   it('ignores keys that are not a resize gesture', () => {
