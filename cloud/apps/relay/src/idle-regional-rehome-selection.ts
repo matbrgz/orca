@@ -299,6 +299,7 @@ function inlineRows(columns: ReadonlyArray<readonly [string, string]>, rows: num
   return `SELECT ${first.join(', ')} ${rest.join(' ')}`
 }
 
+/** NUL-joined so no user or relay host id can collide with another pair. */
 function hostKey(row: SqlRow): string {
   return `${String(row.user_id)}\u0000${String(row.relay_host_id)}`
 }

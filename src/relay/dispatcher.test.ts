@@ -791,6 +791,7 @@ describe('RelayDispatcher', () => {
       }
     }
 
+    /** Seeded PRNG so the randomized sizing trials replay identically on every run. */
     function mulberry32(seed: number): () => number {
       let a = seed
       return () => {
