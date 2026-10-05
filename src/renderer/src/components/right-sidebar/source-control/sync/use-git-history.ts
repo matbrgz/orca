@@ -74,7 +74,18 @@ export function useSourceControlGitHistory({
   const ownerHostKey = activeRepoSettings?.activeRuntimeEnvironmentId?.trim() ?? ''
 
   useEffect(() => {
-    setGitHistoryByWorktree((prev) => keepTrackedWorktrees(prev, worktreeMap))
+    setGitHistoryByWorktree((prev) => {
+      let changed = false
+      const next: Record<string, GitHistoryPanelState> = {}
+      for (const key of Object.keys(prev)) {
+        if (worktreeMap.has(key)) {
+          next[key] = prev[key]
+        } else {
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
     setGitHistoryScopeByWorktree((prev) => keepTrackedWorktrees(prev, worktreeMap))
     for (const key of Object.keys(gitHistoryRequestByWorktreeRef.current)) {
       if (!worktreeMap.has(key)) {

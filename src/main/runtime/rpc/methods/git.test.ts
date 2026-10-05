@@ -758,6 +758,7 @@ describe('git RPC methods', () => {
   })
 
   it('forwards the history scope and rejects unknown scopes', async () => {
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: only the runtime members git.history reads are staged.
     const runtime = {
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitHistory: vi.fn().mockResolvedValue({

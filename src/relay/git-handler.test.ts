@@ -363,22 +363,26 @@ describe('GitHandler', () => {
       writeFileSync(path.join(tmpDir, 'file.txt'), 'stashed')
       execFileSync('git', ['stash', 'push', '-q', '-m', 'stash only'], { cwd: tmpDir })
 
-      type HistoryReply = { items: { subject: string }[]; scope?: string }
-      const current = (await dispatcher.callRequest('git.history', {
+      const current = await dispatcher.callRequest('git.history', {
         worktreePath: tmpDir,
         limit: 10,
         scope: 'current'
-      })) as HistoryReply
-      const all = (await dispatcher.callRequest('git.history', {
+      })
+      const all = await dispatcher.callRequest('git.history', {
         worktreePath: tmpDir,
         limit: 10,
         scope: 'all'
-      })) as HistoryReply
+      })
 
-      expect(current.items.map((item) => item.subject)).toEqual(['initial'])
-      expect(current.scope).toBe('current')
-      expect(all.items.map((item) => item.subject).sort()).toEqual(['initial', 'side only'])
-      expect(all.scope).toBe('all')
+      expect(current).toMatchObject({ scope: 'current', items: [{ subject: 'initial' }] })
+      expect(all).toMatchObject({
+        scope: 'all',
+        items: expect.arrayContaining([
+          expect.objectContaining({ subject: 'initial' }),
+          expect.objectContaining({ subject: 'side only' })
+        ])
+      })
+      expect(all).toHaveProperty('items.length', 2)
     })
   })
 

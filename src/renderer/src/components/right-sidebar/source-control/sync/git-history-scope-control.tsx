@@ -27,13 +27,13 @@ export function GitHistoryScopeControl({
         )}
         className="h-6 w-full justify-stretch"
       >
-        <ToggleGroupItem value="current" className="h-6 grow basis-0 px-1 text-[10px]">
+        <ToggleGroupItem value="current" className="h-6 grow basis-0">
           {translate(
             'auto.components.right.sidebar.GitHistoryPanel.currentBranch',
             'Current branch'
           )}
         </ToggleGroupItem>
-        <ToggleGroupItem value="all" className="h-6 grow basis-0 px-1 text-[10px]">
+        <ToggleGroupItem value="all" className="h-6 grow basis-0">
           {translate('auto.components.right.sidebar.GitHistoryPanel.allBranches', 'All branches')}
         </ToggleGroupItem>
       </ToggleGroup>
