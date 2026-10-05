@@ -63,6 +63,7 @@ function createDictationWindow(): EventEmitter {
   })
 }
 
+/** Fetches the handler registered on `channel`, failing loudly if it was never registered. */
 function getHandler(channel: string): SpeechDownloadHandler {
   const call = handleMock.mock.calls.find((entry) => entry[0] === channel)
   if (!call) {

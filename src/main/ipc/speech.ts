@@ -13,6 +13,7 @@ import {
 } from '../speech/openai-api-key-store'
 import type { Store } from '../persistence'
 
+/** Registers the speech model and dictation IPC handlers for desktop renderers. */
 export function registerSpeechHandlers(store: Store): void {
   ipcMain.handle('speech:getCatalog', () => {
     return SPEECH_MODEL_CATALOG
@@ -86,6 +87,7 @@ export function registerSpeechHandlers(store: Store): void {
     return join(getSpeechModelManager(store).getModelsDir(), `speech-hotwords-${digest}.txt`)
   }
 
+  /** STT owner key; scoping by sender keeps sessions from different windows apart. */
   const getDesktopOwner = (senderId: number, sessionId: string): string =>
     `desktop:${senderId}:${sessionId}`
   // Why: only a stopped/error report removes a session's 'closed' listener, and stopDictation
@@ -105,6 +107,7 @@ export function registerSpeechHandlers(store: Store): void {
       const senderId = event.sender.id
       const owner = getDesktopOwner(senderId, sessionId)
       let sessionListenerRemoved = false
+      /** Stops this session when its window closes; no renderer is left to stop it. */
       const cleanupOnWindowClosed = (): void => {
         windowClosed = true
         cleanupSessionListener()
@@ -117,6 +120,7 @@ export function registerSpeechHandlers(store: Store): void {
           })
           .catch(() => {})
       }
+      /** Detaches this session's close hook; frees the sender slot only if no newer session took it. */
       const cleanupSessionListener = (): void => {
         sessionListenerRemoved = true
         window.off('closed', cleanupOnWindowClosed)
