@@ -71,6 +71,7 @@ export function HostSetupStartActions({
   )
 }
 
+/** Add-project step that registers an existing folder on the host as a project. */
 export function HostSetupExistingFolderStep({
   setupPath,
   setupKind,

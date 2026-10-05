@@ -12,6 +12,7 @@ type LocaleCatalog = ResourceKey
 
 const KEY = 'auto.components.terminal.pane.terminal.drop.handler.uploadingFilesToRemote'
 
+/** Renders the upload toast key from one locale catalog through a fresh i18next instance. */
 async function render(locale: string, catalog: LocaleCatalog, count: number): Promise<string> {
   const instance = createInstance()
   await instance.init({ lng: locale, resources: { [locale]: { translation: catalog } } })

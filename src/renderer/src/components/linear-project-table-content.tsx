@@ -106,6 +106,7 @@ function LinearProjectTableEmpty({ hasError }: { hasError?: boolean }): React.JS
   )
 }
 
+/** Table of Linear projects with loading, error and empty states. */
 export function LinearProjectTableContent({
   projects,
   loading,

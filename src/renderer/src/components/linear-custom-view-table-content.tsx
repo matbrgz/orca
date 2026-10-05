@@ -69,6 +69,7 @@ function LinearCustomViewTableEmpty({ hasError }: { hasError?: boolean }): React
   )
 }
 
+/** Table of Linear custom views with loading, error and empty states. */
 export function LinearCustomViewTableContent({
   views,
   loading,

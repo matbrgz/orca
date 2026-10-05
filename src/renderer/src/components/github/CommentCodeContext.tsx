@@ -41,6 +41,7 @@ export type LoadPRFileContents = (args: {
   baseSha: string
 }) => Promise<GitHubPRFileContents>
 
+/** Shows the diff lines a PR review comment points at, expandable above and below. */
 export function CommentCodeContext({
   comment,
   repoPath,

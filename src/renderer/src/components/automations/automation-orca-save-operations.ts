@@ -130,6 +130,7 @@ export function resolveAutomationEditDestination(
   }
 }
 
+/** Retryable notice for an edit whose project is no longer available on its host. */
 function unavailableDestinationNotice(): AutomationActionNotice {
   return {
     message: translate(

@@ -16,6 +16,7 @@ import { translate } from '@/i18n/i18n'
 import { ActivityThreadOptionsMenu } from './activity-thread-controls'
 import type { ActivityGroupBy, ThreadReadFilter } from './activity-thread-types'
 
+/** Search, grouping, read-filter and display toggles above the agent activity thread list. */
 export function ActivityThreadListToolbar({
   activityFilterInputRef,
   query,

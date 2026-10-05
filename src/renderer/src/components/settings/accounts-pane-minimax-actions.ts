@@ -17,6 +17,7 @@ type MiniMaxCredentialActionContext = {
   recordFeatureInteraction: (featureId: FeatureInteractionId) => void
 }
 
+/** Save/clear handlers for the MiniMax API key and cookie, toasting on failure. */
 export function createMiniMaxCredentialActions(context: MiniMaxCredentialActionContext): {
   saveMiniMaxApiKey: () => Promise<void>
   clearMiniMaxApiKey: () => Promise<void>
@@ -94,6 +95,7 @@ export function createMiniMaxCredentialActions(context: MiniMaxCredentialActionC
     }
   }
 
+  /** Stores the drafted API key; rejects a blank draft before calling main. */
   const saveMiniMaxApiKey = async (): Promise<void> => {
     if (!miniMaxApiKeyDraft.trim()) {
       toast.error(
@@ -135,6 +137,7 @@ export function createMiniMaxCredentialActions(context: MiniMaxCredentialActionC
     }
   }
 
+  /** Removes the stored API key and resets the draft. */
   const clearMiniMaxApiKey = async (): Promise<void> => {
     setMiniMaxCredentialBusy(true)
     try {

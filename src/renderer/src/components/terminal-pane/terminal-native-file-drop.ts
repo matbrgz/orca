@@ -247,6 +247,7 @@ async function pasteLocalDropPaths(
   })
 }
 
+/** Uploads dropped local files to the remote host, then pastes the resolved remote paths. */
 async function uploadRemoteDropPaths(
   args: NativeDropFlowArgs & { connectionId: string; targetShell: 'posix' | 'windows' }
 ): Promise<void> {

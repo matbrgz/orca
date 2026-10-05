@@ -10,6 +10,7 @@ import {
 } from './workspace-space-format'
 import { translate } from '@/i18n/i18n'
 
+/** Status-bar summary of workspace disk usage with scan, cancel and open-full-page actions. */
 export function WorkspaceSpaceCompactPanel({
   onOpenFullPage
 }: {

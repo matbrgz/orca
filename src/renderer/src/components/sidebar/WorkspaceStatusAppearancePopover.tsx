@@ -17,6 +17,7 @@ type WorkspaceStatusAppearancePopoverProps = {
   onChangeIcon: (statusId: string, icon: string) => void
 }
 
+/** Popover for choosing a workspace status's color and icon. */
 export default function WorkspaceStatusAppearancePopover({
   status,
   onChangeColor,

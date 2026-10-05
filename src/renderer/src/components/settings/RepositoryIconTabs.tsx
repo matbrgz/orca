@@ -30,6 +30,7 @@ type RepositoryIconTabsProps = {
   onUseGitHubAvatar: () => void
 }
 
+/** Repo icon picker tabs: built-in icons, an uploaded image or a website favicon. */
 export function RepositoryIconTabs({
   initialTab,
   selectedLucideName,
