@@ -14,7 +14,10 @@ import { LabelsEditor } from './LabelsEditor'
 import { AssigneesEditor } from './AssigneesEditor'
 import { CommentsList, NewCommentForm } from './Comments'
 import { translate } from '@/i18n/i18n'
-import { isImeCompositionKeyDown } from '@/lib/ime-composition-keyboard-event'
+import {
+  isImeCompositionKeyDown,
+  useImeEnterGestureOwnership
+} from '@/lib/ime-composition-keyboard-event'
 
 export function SlugDialogBody({
   projectOrigin,
@@ -26,6 +29,7 @@ export function SlugDialogBody({
   onClose: () => void
 }): React.JSX.Element {
   const { owner, repo, host, number, type, cacheKey } = projectOrigin
+  const imeEnter = useImeEnterGestureOwnership()
   const patchProjectIssueOrPr = useAppStore((s) => s.patchProjectIssueOrPr)
   const projectViewCache = useAppStore((s) => s.projectViewCache)
 
@@ -159,9 +163,18 @@ export function SlugDialogBody({
                 autoFocus
                 value={titleDraft}
                 onChange={(e) => setTitleDraft(e.target.value)}
-                onBlur={() => void commitTitle()}
+                onCompositionStart={() => imeEnter.setComposing(true)}
+                onCompositionEnd={() => imeEnter.setComposing(false)}
+                onKeyUp={imeEnter.onKeyUp}
+                onBlur={() => {
+                  imeEnter.reset()
+                  void commitTitle()
+                }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !isImeCompositionKeyDown(e)) {
+                  if (imeEnter.ownsKeyDown(e) || isImeCompositionKeyDown(e)) {
+                    return
+                  }
+                  if (e.key === 'Enter') {
                     e.preventDefault()
                     void commitTitle()
                   } else if (e.key === 'Escape') {

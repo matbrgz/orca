@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { fireImeConfirmEnter, firePlainEnter } from '@/lib/ime-enter-confirm-test-fixture'
 import { UntitledFileRenameDialog } from './UntitledFileRenameDialog'
 
 afterEach(cleanup)
@@ -21,11 +22,11 @@ describe('UntitledFileRenameDialog Enter', () => {
     const nameInput = screen.getByPlaceholderText('file name')
     const folderInput = screen.getByDisplayValue('/repo')
 
-    fireEvent.keyDown(nameInput, { key: 'Enter', isComposing: true })
-    fireEvent.keyDown(folderInput, { key: 'Enter', isComposing: true })
+    fireImeConfirmEnter(nameInput)
+    fireImeConfirmEnter(folderInput)
     expect(onConfirm).not.toHaveBeenCalled()
 
-    fireEvent.keyDown(nameInput, { key: 'Enter' })
+    firePlainEnter(nameInput)
     expect(onConfirm).toHaveBeenCalledWith('Untitled-1.md')
   })
 })

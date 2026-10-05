@@ -2,6 +2,7 @@
 import { createRoot, type Root } from 'react-dom/client'
 import { act, type ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { fireImeConfirmEnter, firePlainEnter } from '@/lib/ime-enter-confirm-test-fixture'
 import type { WorkspaceStatusDefinition } from '../../../../shared/worktree/types'
 
 const statuses: WorkspaceStatusDefinition[] = [{ id: 'todo', label: 'Todo' }]
@@ -89,16 +90,10 @@ describe('WorkspaceKanbanSettingsMenu', () => {
     expect(input).not.toBeNull()
     act(() => input?.focus())
 
-    act(() => {
-      input?.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true })
-      )
-    })
+    act(() => fireImeConfirmEnter(input!))
     expect(document.activeElement).toBe(input)
 
-    act(() => {
-      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
-    })
+    act(() => firePlainEnter(input!))
     expect(document.activeElement).not.toBe(input)
   })
 

@@ -2,16 +2,17 @@
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { fireImeConfirmEnter, firePlainEnter } from '@/lib/ime-enter-confirm-test-fixture'
 import { OpenInMenuSetting } from './OpenInMenuSetting'
 
 afterEach(cleanup)
 
 function expectEnterRespectsComposition(input: HTMLElement): void {
   act(() => input.focus())
-  fireEvent.keyDown(input, { key: 'Enter', isComposing: true })
+  fireImeConfirmEnter(input)
   expect(document.activeElement).toBe(input)
 
-  fireEvent.keyDown(input, { key: 'Enter' })
+  firePlainEnter(input)
   expect(document.activeElement).not.toBe(input)
 }
 

@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { fireImeConfirmEnter, firePlainEnter } from '@/lib/ime-enter-confirm-test-fixture'
 
 const updateSettings = vi.hoisted(() => vi.fn(async () => {}))
 
@@ -25,11 +26,11 @@ describe('HostRenameDialog Enter', () => {
     )
     const input = screen.getByPlaceholderText('This Mac')
 
-    fireEvent.keyDown(input, { key: 'Enter', isComposing: true })
+    fireImeConfirmEnter(input)
     expect(updateSettings).not.toHaveBeenCalled()
     expect(onOpenChange).not.toHaveBeenCalled()
 
-    fireEvent.keyDown(input, { key: 'Enter' })
+    firePlainEnter(input)
     expect(updateSettings).toHaveBeenCalledTimes(1)
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
