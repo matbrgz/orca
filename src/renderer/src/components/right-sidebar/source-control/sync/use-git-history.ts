@@ -155,7 +155,12 @@ export function useSourceControlGitHistory({
 
   const setGitHistoryScope = useCallback(
     (scope: GitHistoryScope): void => {
-      if (!activeWorktreeId || scope === requestedScope) {
+      if (!activeWorktreeId || (scope === requestedScope && scope === gitHistoryScope)) {
+        return
+      }
+      if (scope === requestedScope) {
+        // Why: an older host answered with another scope; the trigger effect won't re-run on an unchanged request.
+        void refreshGitHistory()
         return
       }
       const worktreeId = activeWorktreeId
@@ -165,7 +170,7 @@ export function useSourceControlGitHistory({
       setGitHistoryScopeByWorktree((prev) => ({ ...prev, [worktreeId]: scope }))
       setGitHistoryByWorktree((prev) => ({ ...prev, [worktreeId]: { status: 'loading' } }))
     },
-    [activeWorktreeId, requestedScope]
+    [activeWorktreeId, gitHistoryScope, refreshGitHistory, requestedScope]
   )
   const refreshGitHistoryRef = useRef(refreshGitHistory)
   // Why: publish in an effect, not the render body — a discarded render must not install its callback. Declared first so the effect below sees the fresh one.

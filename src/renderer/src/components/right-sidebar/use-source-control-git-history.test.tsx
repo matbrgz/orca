@@ -306,6 +306,37 @@ describe('useSourceControlGitHistory stale completion', () => {
     expect(latest?.gitHistoryScope).toBe('current')
   })
 
+  it('re-requests a scope an older host answered with a different one', async () => {
+    await mount()
+    await flush()
+    act(() => latest?.setGitHistoryScope('all'))
+    await flush()
+    expect(mocks.getRuntimeGitHistory).toHaveBeenCalledTimes(2)
+
+    act(() => latest?.setGitHistoryScope('all'))
+    await flush()
+
+    expect(mocks.getRuntimeGitHistory).toHaveBeenCalledTimes(3)
+    expect(mocks.getRuntimeGitHistory).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({ scope: 'all' })
+    )
+  })
+
+  it('does not re-fetch when the requested scope is already the shown scope', async () => {
+    mocks.getRuntimeGitHistory.mockResolvedValue({ ...historyResult('all'), scope: 'all' })
+    await mount()
+    await flush()
+    act(() => latest?.setGitHistoryScope('all'))
+    await flush()
+    expect(mocks.getRuntimeGitHistory).toHaveBeenCalledTimes(2)
+
+    act(() => latest?.setGitHistoryScope('all'))
+    await flush()
+
+    expect(mocks.getRuntimeGitHistory).toHaveBeenCalledTimes(2)
+  })
+
   it('remembers the scope per worktree and forgets it when the worktree disappears', async () => {
     const root = await mount({ worktreeId: 'A', worktreePath: '/a' })
     await flush()
