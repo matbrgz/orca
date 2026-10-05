@@ -180,6 +180,10 @@ describe('buildWorkspaceSessionPatch', () => {
             {
               id: 'tab-local',
               title: 'shell',
+              customTitle: null,
+              color: null,
+              sortOrder: 0,
+              createdAt: 1,
               ptyId: 'pty-1',
               worktreeId: localWorktreeId,
               pendingActivationSpawn: true,
@@ -192,7 +196,7 @@ describe('buildWorkspaceSessionPatch', () => {
                 reason: 'reattach-unverifiable',
                 tabGeneration: 1
               }
-            } as never
+            }
           ]
         },
         ptyIdsByTabId: {

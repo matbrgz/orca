@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TerminalTab } from '../../../shared/terminal-tab-types'
 import { getDefaultWorkspaceSession } from '../../../shared/constants'
 import { hydrateWorkspaceTerminalRows } from '../store/slices/terminal-session-row-hydration'
-import { applyWebSessionTabsSnapshot, type WebSessionTabsSyncState } from './web-session-tabs-sync'
+import { applyWebSessionTabsSnapshot } from './web-session-tabs-sync'
 import { shouldReplaceTerminalTab } from './web-session-tabs-sync/terminal-surfaces'
 import {
   ENV,
@@ -75,7 +75,7 @@ describe('restored terminal tabs vs. runtime host snapshots', () => {
       makeSnapshot([UNRELATED_HOST_TERMINAL]),
       ENV,
       NOW
-    ) as Partial<WebSessionTabsSyncState>
+    )
 
     const ids = patch.tabsByWorktree?.[WT]?.map((tab) => tab.id) ?? []
     expect(ids).toEqual(expect.arrayContaining(['restored-tab-a', 'restored-tab-b']))
