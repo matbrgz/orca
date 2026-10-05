@@ -13,7 +13,8 @@ import {
   loadColumnWidths,
   MIN_COLUMN_WIDTH,
   resolveWidth,
-  saveColumnWidths
+  saveColumnWidths,
+  splitColumnPair
 } from './column-widths'
 import type {
   GitHubIssueType,
@@ -108,11 +109,8 @@ export default function ProjectViewList({
     (fieldId: string, width: number, nextFieldId: string, nextWidth: number): void => {
       setWidthsByScope((prev) => {
         const currentWidths = prev[scopeKey] ?? persistedWidths
-        const updated = {
-          ...currentWidths,
-          [fieldId]: Math.max(MIN_COLUMN_WIDTH, Math.round(width)),
-          [nextFieldId]: Math.max(MIN_COLUMN_WIDTH, Math.round(nextWidth))
-        }
+        const [pairWidth, pairNextWidth] = splitColumnPair(width, nextWidth)
+        const updated = { ...currentWidths, [fieldId]: pairWidth, [nextFieldId]: pairNextWidth }
         saveColumnWidths(scopeKey, updated)
         return { ...prev, [scopeKey]: updated }
       })

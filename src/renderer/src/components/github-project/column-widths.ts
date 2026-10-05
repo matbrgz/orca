@@ -56,6 +56,16 @@ export function saveColumnWidths(scopeKey: string, widths: Record<string, number
   writeMap(map)
 }
 
+/** Rounds a resized pair to whole weights, clamping the first so the second absorbs the rest. */
+export function splitColumnPair(width: number, nextWidth: number): [number, number] {
+  const pairTotal = Math.round(width + nextWidth)
+  const clamped = Math.max(
+    MIN_COLUMN_WIDTH,
+    Math.min(pairTotal - MIN_COLUMN_WIDTH, Math.round(width))
+  )
+  return [clamped, Math.max(MIN_COLUMN_WIDTH, pairTotal - clamped)]
+}
+
 export function defaultWidthFor(field: GitHubProjectField): number {
   return field.dataType === 'TITLE' ? DEFAULT_TITLE_WIDTH : DEFAULT_FIELD_WIDTH
 }
