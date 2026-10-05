@@ -13,6 +13,7 @@ import { useNativeChatDraft } from './use-native-chat-draft'
 const settledScopes = new Set<string>()
 let releasePending: (() => void) | null = null
 
+/** Suspends the first render of each unseen scope so the sibling probe's render is discarded. */
 function SuspendOnNewScope({ scopeKey }: { scopeKey: string }): null {
   if (!settledScopes.has(scopeKey)) {
     throw new Promise<void>((resolve) => {
@@ -25,8 +26,10 @@ function SuspendOnNewScope({ scopeKey }: { scopeKey: string }): null {
   return null
 }
 
+/** IME stub: never composing. */
 const notComposing = (): boolean => false
 
+/** Shows the hook's draft for a scope next to the suspender that discards the render. */
 function DraftProbe({ scopeKey }: { scopeKey: string }): React.JSX.Element {
   const { draft } = useNativeChatDraft(scopeKey, notComposing)
   return (
@@ -37,6 +40,7 @@ function DraftProbe({ scopeKey }: { scopeKey: string }): React.JSX.Element {
   )
 }
 
+/** Wraps the probe in the Suspense boundary that a scope change unwinds. */
 function boundary(scopeKey: string): React.JSX.Element {
   return (
     <Suspense fallback={<span data-testid="fallback">loading</span>}>

@@ -40,6 +40,7 @@ import { QuickCommandsPane } from './QuickCommandsPane'
 const settledSignals = new Set<number>()
 let releasePending: (() => void) | null = null
 
+/** Suspends the first render of each unseen signal so the sibling pane's render is discarded. */
 function SuspendOnNewSignal({ signal }: { signal: number }): null {
   if (!settledSignals.has(signal)) {
     throw new Promise<void>((resolve) => {
@@ -54,6 +55,7 @@ function SuspendOnNewSignal({ signal }: { signal: number }): null {
 
 const settings: GlobalSettings = { ...getDefaultSettings('/home/dev'), terminalQuickCommands: [] }
 
+/** Renders the pane beside the suspender inside the Suspense boundary a new signal unwinds. */
 function boundary(signal: number): React.JSX.Element {
   return (
     <Suspense fallback={<span data-testid="fallback">loading</span>}>

@@ -50,6 +50,7 @@ const worktree: Worktree = {
 let openSettled = false
 let releasePending: (() => void) | null = null
 
+/** Suspends the first render after the dialog opens so the seeding render is discarded. */
 function SuspendOnFirstOpen(): null {
   const activeModal = useAppStore((s) => s.activeModal)
   if (activeModal === 'edit-meta' && !openSettled) {

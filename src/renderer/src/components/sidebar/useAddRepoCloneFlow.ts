@@ -12,6 +12,7 @@ import { upsertAddedRepoWithProjectHostSetup } from './add-repo-store-upsert'
 import { worktreeRefreshOptions } from './add-repo-runtime-owner'
 import type { ExecutionHostId } from '../../../../shared/execution-host'
 
+/** Clone step state for the add-repo dialog, auto-filling the local destination once per entry. */
 export function useAddRepoCloneFlow({
   step,
   activeRuntimeEnvironmentId,

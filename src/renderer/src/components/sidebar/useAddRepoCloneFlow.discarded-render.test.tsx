@@ -17,6 +17,7 @@ import type { AddRepoDialogStep } from './add-repo-dialog-types'
 const settledSteps = new Set<string>()
 let releasePending: (() => void) | null = null
 
+/** Suspends the first render of each unseen step so the sibling probe's render is discarded. */
 function SuspendOnNewStep({ step }: { step: string }): null {
   if (!settledSteps.has(step)) {
     throw new Promise<void>((resolve) => {
@@ -29,6 +30,7 @@ function SuspendOnNewStep({ step }: { step: string }): null {
   return null
 }
 
+/** Shows the hook's clone destination for a step next to the suspender that discards the render. */
 function CloneStepProbe({ step }: { step: AddRepoDialogStep }): React.JSX.Element {
   const { cloneDestination } = useAddRepoCloneFlow({
     step,
@@ -46,6 +48,7 @@ function CloneStepProbe({ step }: { step: AddRepoDialogStep }): React.JSX.Elemen
   )
 }
 
+/** Wraps the probe in the Suspense boundary that a step change unwinds. */
 function boundary(step: AddRepoDialogStep): React.JSX.Element {
   return (
     <Suspense fallback={<span data-testid="fallback">loading</span>}>

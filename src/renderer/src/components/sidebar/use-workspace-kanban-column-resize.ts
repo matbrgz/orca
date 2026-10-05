@@ -12,6 +12,7 @@ type UseWorkspaceKanbanColumnResizeResult = {
   onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void
 }
 
+/** Kanban column width with pointer/keyboard resize; a local draft wins over prop changes mid-drag. */
 export function useWorkspaceKanbanColumnResize(
   committedWidth: number,
   onCommitWidth: (width: number) => void

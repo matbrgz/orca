@@ -83,6 +83,7 @@ export function shouldShowQuickCommandsRefreshError(
   return commandsAreCurrent && runtimeCommands?.ready === true && Boolean(runtimeCommands.error)
 }
 
+/** Settings pane for terminal quick commands; a deep-link signal opens the add dialog once. */
 export function QuickCommandsPane({
   settings,
   addCommandIntentSignal

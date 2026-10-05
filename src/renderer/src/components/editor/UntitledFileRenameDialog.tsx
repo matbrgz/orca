@@ -24,6 +24,7 @@ type UntitledFileRenameDialogProps = {
   onConfirm: (newRelativePath: string) => void
 }
 
+/** Prompts for a name and folder to save an untitled file under, reseeding the drafts on each open. */
 export function UntitledFileRenameDialog({
   open,
   currentName,

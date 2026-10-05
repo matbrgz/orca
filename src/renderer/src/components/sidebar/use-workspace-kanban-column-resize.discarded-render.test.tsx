@@ -9,6 +9,7 @@ import { useWorkspaceKanbanColumnResize } from './use-workspace-kanban-column-re
 const settledWidths = new Set<number>()
 let releasePending: (() => void) | null = null
 
+/** Suspends the first render of each unseen width so the sibling probe's render is discarded. */
 function SuspendOnNewWidth({ width }: { width: number }): null {
   if (!settledWidths.has(width)) {
     throw new Promise<void>((resolve) => {
@@ -23,6 +24,7 @@ function SuspendOnNewWidth({ width }: { width: number }): null {
 
 const commitWidth = vi.fn()
 
+/** Exposes the hook's width and keyboard handler next to the suspender that discards the render. */
 function ColumnProbe({ committedWidth }: { committedWidth: number }): React.JSX.Element {
   const { columnWidth, onColumnResizeKeyDown } = useWorkspaceKanbanColumnResize(
     committedWidth,
@@ -38,6 +40,7 @@ function ColumnProbe({ committedWidth }: { committedWidth: number }): React.JSX.
   )
 }
 
+/** Wraps the probe in the Suspense boundary that a width change unwinds. */
 function boundary(committedWidth: number): React.JSX.Element {
   return (
     <Suspense fallback={<span data-testid="fallback">loading</span>}>

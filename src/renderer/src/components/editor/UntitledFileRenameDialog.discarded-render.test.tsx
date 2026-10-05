@@ -9,6 +9,7 @@ import { UntitledFileRenameDialog } from './UntitledFileRenameDialog'
 const settledNames = new Set<string>()
 let releasePending: (() => void) | null = null
 
+/** Suspends the first render of each unseen name so the sibling dialog's render is discarded. */
 function SuspendOnNewName({ currentName }: { currentName: string }): null {
   if (!settledNames.has(currentName)) {
     throw new Promise<void>((resolve) => {
@@ -21,6 +22,7 @@ function SuspendOnNewName({ currentName }: { currentName: string }): null {
   return null
 }
 
+/** Renders the open dialog beside a suspender that discards its render when the name changes. */
 function Harness({ currentName }: { currentName: string }): React.JSX.Element {
   return (
     <Suspense fallback={<span data-testid="fallback">loading</span>}>
