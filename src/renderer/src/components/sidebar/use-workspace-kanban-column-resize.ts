@@ -30,7 +30,11 @@ export function useWorkspaceKanbanColumnResize(
   const frameRef = useRef<number | null>(null)
 
   commitWidthRef.current = onCommitWidth
-  if (committedWidthRef.current !== nextCommittedWidth) {
+  // Why: guard with state, not committedWidthRef, so a discarded render reverts it with the
+  // setColumnWidth it gates. The ref still mirrors the value for handlers.
+  const [lastCommittedWidth, setLastCommittedWidth] = useState(nextCommittedWidth)
+  if (lastCommittedWidth !== nextCommittedWidth) {
+    setLastCommittedWidth(nextCommittedWidth)
     committedWidthRef.current = nextCommittedWidth
     if (!resizingRef.current) {
       draftWidthRef.current = nextCommittedWidth
