@@ -11,6 +11,7 @@ import {
   GIT_HISTORY_OUTGOING_CHANGES_ID,
   buildDefaultGitHistoryColorMap,
   buildGitHistoryViewModels,
+  getGitHistoryItemColor,
   getGitHistoryMergeParentLaneIndex
 } from './git-history-graph'
 
@@ -107,6 +108,22 @@ describe('git history graph model', () => {
     expect(viewModels[2]!.inputSwimlanes.map((node) => node.id)).toEqual(['A'])
     expect(viewModels[2]!.outputSwimlanes.map((node) => node.id)).toEqual(['B'])
     expect(viewModels[3]!.outputSwimlanes).toEqual([])
+  })
+
+  it('colors a root commit with its own lane when another lane follows it', () => {
+    // V's lane is not last, so the lane at V's index in outputSwimlanes belongs to A.
+    const rootRef = branch('root', 'V')
+    const viewModels = buildGitHistoryViewModels(
+      [item('M', ['V', 'A']), item('V', [], [rootRef]), item('A', ['B']), item('B', [])],
+      new Map([[rootRef.id, undefined]])
+    )
+    const root = viewModels[1]!
+    const [rootLane, otherLane] = root.inputSwimlanes
+
+    expect(root.outputSwimlanes.map((node) => node.id)).toEqual(['A'])
+    expect(rootLane!.color).not.toBe(otherLane!.color)
+    expect(getGitHistoryItemColor(root)).toBe(rootLane!.color)
+    expect(root.historyItem.references?.[0]?.color).toBe(rootLane!.color)
   })
 
   it('keeps the first matching parent when history contains duplicate ids', () => {

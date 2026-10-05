@@ -65,6 +65,23 @@ function getLabelColorIdentifier(
   return undefined
 }
 
+function resolveNodeColor(
+  historyItemId: string,
+  hasParents: boolean,
+  inputSwimlanes: readonly GitHistoryGraphNode[],
+  outputSwimlanes: readonly GitHistoryGraphNode[]
+): GitHistoryGraphColorId {
+  const inputIndex = inputSwimlanes.findIndex((node) => node.id === historyItemId)
+  const circleIndex = inputIndex !== -1 ? inputIndex : inputSwimlanes.length
+  // Why: a root row ends its lane, so outputSwimlanes[circleIndex] is another lane, not its own.
+  if (hasParents && circleIndex < outputSwimlanes.length) {
+    return outputSwimlanes[circleIndex]!.color
+  }
+  return circleIndex < inputSwimlanes.length
+    ? inputSwimlanes[circleIndex]!.color
+    : GIT_HISTORY_REF_COLOR
+}
+
 export function compareGitHistoryRefs(
   ref1: GitHistoryItemRef,
   ref2: GitHistoryItemRef,
@@ -165,14 +182,12 @@ export function buildGitHistoryViewModels(
       .map((ref) => {
         let color = colorMap.get(ref.id)
         if (colorMap.has(ref.id) && color === undefined) {
-          const inputIndex = inputSwimlanes.findIndex((node) => node.id === historyItemId)
-          const circleIndex = inputIndex !== -1 ? inputIndex : inputSwimlanes.length
-          color =
-            circleIndex < outputSwimlanes.length
-              ? outputSwimlanes[circleIndex]!.color
-              : circleIndex < inputSwimlanes.length
-                ? inputSwimlanes[circleIndex]!.color
-                : GIT_HISTORY_REF_COLOR
+          color = resolveNodeColor(
+            historyItemId,
+            firstParentId !== undefined,
+            inputSwimlanes,
+            outputSwimlanes
+          )
         }
         return { ...ref, color }
       })
@@ -203,6 +218,16 @@ export function getGitHistoryItemLaneIndex(viewModel: GitHistoryItemViewModel): 
     (node) => node.id === viewModel.historyItem.id
   )
   return inputIndex !== -1 ? inputIndex : viewModel.inputSwimlanes.length
+}
+
+export function getGitHistoryItemColor(viewModel: GitHistoryItemViewModel): GitHistoryGraphColorId {
+  const historyItem = viewModel.historyItem
+  return resolveNodeColor(
+    historyItem.id,
+    historyItem.parentIds.length > 0,
+    viewModel.inputSwimlanes,
+    viewModel.outputSwimlanes
+  )
 }
 
 export function getGitHistoryMergeParentLaneIndex(
