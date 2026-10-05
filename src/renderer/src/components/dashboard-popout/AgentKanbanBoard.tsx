@@ -66,6 +66,7 @@ function groupByBucket(cards: DashboardCard[]): Record<DashboardBucket, Dashboar
   return grouped
 }
 
+/** One bucket column, exposed as a named region so its count and cards are announced together. */
 function KanbanColumn({
   bucket,
   cards,
