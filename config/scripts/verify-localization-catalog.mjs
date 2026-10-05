@@ -157,8 +157,8 @@ function normalizeInterpolationVariables(value) {
     .join('|')
 }
 
-function formatInconsistentFallbackVariables(inconsistentFallbackVariables) {
-  return inconsistentFallbackVariables
+function formatFallbackReferenceGroups(groups) {
+  return groups
     .map(({ key, references }) => {
       const locations = references
         .map(
@@ -171,7 +171,7 @@ function formatInconsistentFallbackVariables(inconsistentFallbackVariables) {
     .join('\n\n')
 }
 
-function collectInconsistentFallbackVariables(references) {
+function groupFallbackReferencesByKey(references) {
   const byKey = new Map()
 
   for (const reference of references) {
@@ -182,8 +182,18 @@ function collectInconsistentFallbackVariables(references) {
     existing.push(reference)
     byKey.set(reference.key, existing)
   }
+  return byKey
+}
 
-  return [...byKey.entries()]
+// Why: the catalog holds one value per key, so a second sentence on the same key never renders.
+function collectReusedFallbackKeys(references) {
+  return [...groupFallbackReferencesByKey(references).entries()]
+    .filter(([, keyReferences]) => new Set(keyReferences.map((r) => r.fallback)).size > 1)
+    .map(([key, keyReferences]) => ({ key, references: keyReferences }))
+}
+
+function collectInconsistentFallbackVariables(references) {
+  return [...groupFallbackReferencesByKey(references).entries()]
     .map(([key, keyReferences]) => {
       const uniqueFallbackVariables = new Set(
         keyReferences.map((reference) => normalizeInterpolationVariables(reference.fallback))
@@ -519,7 +529,17 @@ export async function main(
   if (inconsistentFallbackVariables.length > 0) {
     console.error('Localization keys are used with inconsistent interpolation placeholders.')
     console.error('')
-    console.error(formatInconsistentFallbackVariables(inconsistentFallbackVariables))
+    console.error(formatFallbackReferenceGroups(inconsistentFallbackVariables))
+    return 1
+  }
+
+  const reusedFallbackKeys = collectReusedFallbackKeys(references)
+  if (reusedFallbackKeys.length > 0) {
+    console.error(
+      'Localization keys are reused for different fallback text; give each its own key.'
+    )
+    console.error('')
+    console.error(formatFallbackReferenceGroups(reusedFallbackKeys))
     return 1
   }
 

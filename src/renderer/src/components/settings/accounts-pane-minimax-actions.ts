@@ -125,7 +125,7 @@ export function createMiniMaxCredentialActions(context: MiniMaxCredentialActionC
     } catch (error) {
       toast.error(
         translate(
-          'auto.components.settings.AccountsPane.b43e761fe5',
+          'auto.components.settings.AccountsPane.minimaxCredentialUpdateFailed',
           'MiniMax credential update failed.'
         ),
         { description: error instanceof Error ? error.message : String(error) }
@@ -146,7 +146,7 @@ export function createMiniMaxCredentialActions(context: MiniMaxCredentialActionC
     } catch (error) {
       toast.error(
         translate(
-          'auto.components.settings.AccountsPane.b43e761fe5',
+          'auto.components.settings.AccountsPane.minimaxCredentialUpdateFailed',
           'MiniMax credential update failed.'
         ),
         { description: error instanceof Error ? error.message : String(error) }
