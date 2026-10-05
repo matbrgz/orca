@@ -268,6 +268,7 @@ const RASTER_IMAGE_DIMENSION_READERS_BY_MIME_TYPE: ReadonlyMap<string, RasterIma
     ['image/x-ms-bmp', readBmpDimensions]
   ])
 
+/** True when a family-specific header reader exists for this already-normalized MIME type. */
 export function isRasterImageDimensionMimeType(normalizedMimeType: string): boolean {
   return RASTER_IMAGE_DIMENSION_READERS_BY_MIME_TYPE.has(normalizedMimeType)
 }

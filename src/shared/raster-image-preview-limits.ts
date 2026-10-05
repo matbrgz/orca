@@ -15,16 +15,19 @@ export const INVALID_RASTER_IMAGE_PREVIEW_ERROR =
 export const RASTER_IMAGE_PREVIEW_TOO_LARGE_ERROR =
   'Image dimensions exceed the preview safety limit'
 
+/** Bare lowercase media type with parameters such as `; charset=` stripped, or null when empty. */
 function normalizeMimeType(mimeType: string | undefined): string | null {
   const normalized = mimeType?.split(';', 1)[0]?.trim().toLowerCase()
   return normalized || null
 }
 
+/** True when the declared type is a raster family this module can measure without decoding. */
 export function isKnownRasterImageMimeType(mimeType: string | undefined): boolean {
   const normalized = normalizeMimeType(mimeType)
   return normalized !== null && isRasterImageDimensionMimeType(normalized)
 }
 
+/** Checks unknown input against the per-side and total-pixel preview caps without overflowing. */
 export function isRasterImagePreviewDimensions(value: unknown): value is RasterImageDimensions {
   if (!value || typeof value !== 'object') {
     return false
