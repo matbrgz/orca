@@ -89,8 +89,9 @@ export function registerSpeechHandlers(store: Store): void {
   const getDesktopOwner = (senderId: number, sessionId: string): string =>
     `desktop:${senderId}:${sessionId}`
   // Why: only a stopped/error report removes a session's 'closed' listener, and stopDictation
-  // returns without reporting once the worker is gone; one live listener per owner bounds it.
-  const dictationListenerCleanups = new Map<string, () => void>()
+  // returns without reporting once the worker is gone. Keyed by sender, not owner: the renderer
+  // sends a fresh sessionId per run, and the STT service allows one active owner at a time.
+  const dictationListenerCleanups = new Map<number, () => void>()
 
   ipcMain.handle(
     'speech:startDictation',
@@ -101,7 +102,9 @@ export function registerSpeechHandlers(store: Store): void {
       }
       let resolvedHotwordsPath: string | undefined
       let windowClosed = false
-      const owner = getDesktopOwner(event.sender.id, sessionId)
+      const senderId = event.sender.id
+      const owner = getDesktopOwner(senderId, sessionId)
+      let sessionListenerRemoved = false
       const cleanupOnWindowClosed = (): void => {
         windowClosed = true
         cleanupSessionListener()
@@ -115,15 +118,13 @@ export function registerSpeechHandlers(store: Store): void {
           .catch(() => {})
       }
       const cleanupSessionListener = (): void => {
+        sessionListenerRemoved = true
         window.off('closed', cleanupOnWindowClosed)
-        if (dictationListenerCleanups.get(owner) === cleanupSessionListener) {
-          dictationListenerCleanups.delete(owner)
+        if (dictationListenerCleanups.get(senderId) === cleanupSessionListener) {
+          dictationListenerCleanups.delete(senderId)
         }
       }
-      // A restart for the same owner supersedes the previous session's listener.
-      dictationListenerCleanups.get(owner)?.()
       window.once('closed', cleanupOnWindowClosed)
-      dictationListenerCleanups.set(owner, cleanupSessionListener)
 
       try {
         // Why: on macOS, the Electron binary needs explicit TCC permission for
@@ -191,6 +192,11 @@ export function registerSpeechHandlers(store: Store): void {
           resolvedHotwordsPath,
           owner
         )
+        // Why: supersede only after success; a failed start must not unhook a still-live session.
+        dictationListenerCleanups.get(senderId)?.()
+        if (!sessionListenerRemoved) {
+          dictationListenerCleanups.set(senderId, cleanupSessionListener)
+        }
         if (resolvedHotwordsPath) {
           unlink(resolvedHotwordsPath).catch(() => {})
         }

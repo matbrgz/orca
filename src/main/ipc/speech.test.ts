@@ -154,7 +154,7 @@ describe('registerSpeechHandlers', () => {
     expect(window.off).toHaveBeenCalledWith('closed', expect.any(Function))
   })
 
-  it('does not stack window closed listeners when the same dictation owner restarts', async () => {
+  it('does not stack window closed listeners across per-run dictation sessions', async () => {
     const window = createDictationWindow()
     // Why: a session that never reports stopped/error (worker already gone) is the leak case.
     getSpeechSttServiceMock.mockReturnValue({
@@ -165,30 +165,36 @@ describe('registerSpeechHandlers', () => {
     registerSpeechHandlers({} as never)
     const startDictation = getHandler('speech:startDictation') as SpeechDictationHandler
 
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      await startDictation({ sender: { id: 7 } }, 'model-1', undefined, 'desktop')
+    // DictationController sends a fresh String(runId) per start.
+    for (let runId = 1; runId <= 3; runId += 1) {
+      await startDictation({ sender: { id: 7 } }, 'model-1', undefined, String(runId))
     }
 
     expect(window.listenerCount('closed')).toBe(1)
   })
 
-  it('keeps one closed listener per distinct dictation owner', async () => {
-    const window = createDictationWindow()
+  it('keeps one closed listener per window', async () => {
+    const first = createDictationWindow()
+    const second = createDictationWindow()
     getSpeechSttServiceMock.mockReturnValue({
       startDictation: vi.fn(async () => undefined),
       stopDictation: vi.fn(async () => undefined)
     })
-    fromWebContentsMock.mockReturnValue(window)
+    fromWebContentsMock.mockImplementation((sender: { id: number }) =>
+      sender.id === 7 ? first : second
+    )
     registerSpeechHandlers({} as never)
     const startDictation = getHandler('speech:startDictation') as SpeechDictationHandler
 
-    await startDictation({ sender: { id: 7 } }, 'model-1', undefined, 'desktop')
-    await startDictation({ sender: { id: 7 } }, 'model-1', undefined, 'mobile-1')
+    await startDictation({ sender: { id: 7 } }, 'model-1', undefined, '1')
+    await startDictation({ sender: { id: 8 } }, 'model-1', undefined, '1')
+    await startDictation({ sender: { id: 7 } }, 'model-1', undefined, '2')
 
-    expect(window.listenerCount('closed')).toBe(2)
+    expect(first.listenerCount('closed')).toBe(1)
+    expect(second.listenerCount('closed')).toBe(1)
   })
 
-  it('still stops dictation on window close and tracks a reopened window afresh', async () => {
+  it('stops the latest session on window close and tracks a reopened window afresh', async () => {
     const window = createDictationWindow()
     const stopDictation = vi.fn(async () => undefined)
     getSpeechSttServiceMock.mockReturnValue({
@@ -199,17 +205,44 @@ describe('registerSpeechHandlers', () => {
     registerSpeechHandlers({} as never)
     const startDictation = getHandler('speech:startDictation') as SpeechDictationHandler
 
-    await startDictation({ sender: { id: 7 } }, 'model-1', undefined, 'desktop')
+    await startDictation({ sender: { id: 7 } }, 'model-1', undefined, '1')
+    await startDictation({ sender: { id: 7 } }, 'model-1', undefined, '2')
     window.emit('closed')
 
-    expect(stopDictation).toHaveBeenCalledWith('desktop:7:desktop')
+    expect(stopDictation).toHaveBeenCalledTimes(1)
+    expect(stopDictation).toHaveBeenCalledWith('desktop:7:2')
     expect(window.listenerCount('closed')).toBe(0)
 
     const reopened = createDictationWindow()
     fromWebContentsMock.mockReturnValue(reopened)
-    await startDictation({ sender: { id: 7 } }, 'model-1', undefined, 'desktop')
+    await startDictation({ sender: { id: 7 } }, 'model-1', undefined, '1')
 
     expect(reopened.listenerCount('closed')).toBe(1)
+  })
+
+  it('keeps the live session close listener when a restart fails', async () => {
+    const window = createDictationWindow()
+    const stopDictation = vi.fn(async () => undefined)
+    getSpeechSttServiceMock.mockReturnValue({
+      startDictation: vi
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Unknown model: missing')),
+      stopDictation
+    })
+    fromWebContentsMock.mockReturnValue(window)
+    registerSpeechHandlers({} as never)
+    const startDictation = getHandler('speech:startDictation') as SpeechDictationHandler
+
+    await startDictation({ sender: { id: 7 } }, 'model-1', undefined, '1')
+    // A renderer remount resets runId, so the failing restart can reuse session '1'.
+    await expect(startDictation({ sender: { id: 7 } }, 'missing', undefined, '1')).rejects.toThrow(
+      'Unknown model: missing'
+    )
+
+    expect(window.listenerCount('closed')).toBe(1)
+    window.emit('closed')
+    expect(stopDictation).toHaveBeenCalledWith('desktop:7:1')
   })
 
   it('routes desktop model deletion through the shared deletion helper', async () => {
