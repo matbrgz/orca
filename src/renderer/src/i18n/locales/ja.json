@@ -15651,6 +15651,9 @@
         "richMarkdownImageInsertionFeedback": {
           "importedFileKept": "宛先が変更されたため、画像の挿入はキャンセルされました。インポートされたファイルは保持されました。",
           "destinationChanged": "宛先が変更されたため、画像の挿入はキャンセルされました。再試行。"
+        },
+        "RichMarkdownEmojiMenu": {
+          "dialogLabel": "絵文字ピッカー"
         }
       },
       "diff": {

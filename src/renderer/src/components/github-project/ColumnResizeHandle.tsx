@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from 'react'
 import { MIN_COLUMN_WIDTH } from './column-widths'
 import { translate } from '@/i18n/i18n'
 
+// One arrow-key press moves 5% of the adjacent pair's combined weight.
+const KEYBOARD_RESIZE_STEP_FRACTION = 0.05
+
 type Props = {
   fieldId: string
   nextFieldId: string
@@ -70,15 +73,55 @@ export default function ColumnResizeHandle({
     }
   }, [dragging, fieldId, nextFieldId, onResize])
 
+  const totalFr = currentWidth + nextWidth
+
+  // Why: keyboard steps work in fr directly; the pixel floor converts to fr only once laid out.
+  const nudgeWidth = (direction: -1 | 1): void => {
+    if (totalFr <= 0) {
+      return
+    }
+    const cell = handleRef.current?.parentElement
+    const nextCell = cell?.nextElementSibling as HTMLElement | null
+    const totalPx = (cell?.offsetWidth ?? 0) + (nextCell?.offsetWidth ?? 0)
+    const minFr =
+      totalPx > 0 ? (totalFr * MIN_COLUMN_WIDTH) / totalPx : totalFr * KEYBOARD_RESIZE_STEP_FRACTION
+    if (minFr * 2 >= totalFr) {
+      return
+    }
+    const proposedFrA = currentWidth + direction * totalFr * KEYBOARD_RESIZE_STEP_FRACTION
+    const newFrA = Math.max(minFr, Math.min(totalFr - minFr, proposedFrA))
+    onResize(fieldId, newFrA, nextFieldId, totalFr - newFrA)
+  }
+
   return (
     <div
       ref={handleRef}
       role="separator"
       aria-orientation="vertical"
+      tabIndex={0}
+      aria-valuenow={totalFr > 0 ? Math.round((currentWidth / totalFr) * 100) : 50}
+      aria-valuemin={0}
+      aria-valuemax={100}
       aria-label={translate(
         'auto.components.github.project.ColumnResizeHandle.1304289353',
         'Resize column'
       )}
+      onKeyDown={(e) => {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
+          return
+        }
+        e.preventDefault()
+        e.stopPropagation()
+        nudgeWidth(e.key === 'ArrowLeft' ? -1 : 1)
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.background = 'rgba(59,130,246,0.25)'
+      }}
+      onBlur={(e) => {
+        if (!dragging) {
+          e.currentTarget.style.background = 'transparent'
+        }
+      }}
       onMouseDown={(e) => {
         if (e.button !== 0) {
           return
