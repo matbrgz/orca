@@ -24,6 +24,7 @@ import {
 } from '@/lib/open-in-app-catalog'
 import { translate } from '@/i18n/i18n'
 import { createBrowserUuid } from '@/lib/browser-uuid'
+import { isImeCompositionKeyDown } from '@/lib/ime-composition-keyboard-event'
 
 type OpenInMenuSettingProps = {
   applications: OpenInApplication[] | undefined
@@ -186,7 +187,7 @@ function OpenInMenuRow({
                 }
                 onBlur={onCommit}
                 onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
+                  if (event.key === 'Enter' && !isImeCompositionKeyDown(event)) {
                     onCommit()
                     event.currentTarget.blur()
                   }
@@ -214,7 +215,7 @@ function OpenInMenuRow({
               }
               onBlur={onCommit}
               onKeyDown={(event) => {
-                if (event.key === 'Enter') {
+                if (event.key === 'Enter' && !isImeCompositionKeyDown(event)) {
                   onCommit()
                   event.currentTarget.blur()
                 }

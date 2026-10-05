@@ -14,6 +14,7 @@ import { LabelsEditor } from './LabelsEditor'
 import { AssigneesEditor } from './AssigneesEditor'
 import { CommentsList, NewCommentForm } from './Comments'
 import { translate } from '@/i18n/i18n'
+import { isImeCompositionKeyDown } from '@/lib/ime-composition-keyboard-event'
 
 export function SlugDialogBody({
   projectOrigin,
@@ -160,7 +161,7 @@ export function SlugDialogBody({
                 onChange={(e) => setTitleDraft(e.target.value)}
                 onBlur={() => void commitTitle()}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === 'Enter' && !isImeCompositionKeyDown(e)) {
                     e.preventDefault()
                     void commitTitle()
                   } else if (e.key === 'Escape') {

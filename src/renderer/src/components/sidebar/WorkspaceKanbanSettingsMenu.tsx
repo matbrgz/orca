@@ -14,6 +14,7 @@ import type { WorkspaceStatusDefinition } from '../../../../shared/worktree/type
 import { getWorkspaceStatusVisualMeta } from './workspace-status'
 import WorkspaceStatusAppearancePopover from './WorkspaceStatusAppearancePopover'
 import { translate } from '@/i18n/i18n'
+import { isImeCompositionKeyDown } from '@/lib/ime-composition-keyboard-event'
 
 type WorkspaceKanbanSettingsMenuProps = {
   workspaceStatuses: readonly WorkspaceStatusDefinition[]
@@ -125,7 +126,7 @@ export default function WorkspaceKanbanSettingsMenu({
                     onBlur={(event) => onRenameStatus(status.id, event.target.value)}
                     onKeyDown={(event) => {
                       event.stopPropagation()
-                      if (event.key === 'Enter') {
+                      if (event.key === 'Enter' && !isImeCompositionKeyDown(event)) {
                         event.currentTarget.blur()
                       }
                     }}

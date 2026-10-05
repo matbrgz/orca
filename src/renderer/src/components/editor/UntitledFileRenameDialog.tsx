@@ -13,6 +13,7 @@ import {
 import { getRelativePathInsideRoot } from '@/lib/path'
 import { useMountedRef } from '@/hooks/useMountedRef'
 import { translate } from '@/i18n/i18n'
+import { isImeCompositionKeyDown } from '@/lib/ime-composition-keyboard-event'
 
 type UntitledFileRenameDialogProps = {
   open: boolean
@@ -157,7 +158,7 @@ export function UntitledFileRenameDialog({
                   setError(null)
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === 'Enter' && !isImeCompositionKeyDown(e)) {
                     e.preventDefault()
                     handleSubmit()
                   }
@@ -186,7 +187,7 @@ export function UntitledFileRenameDialog({
                   setError(null)
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === 'Enter' && !isImeCompositionKeyDown(e)) {
                     e.preventDefault()
                     handleSubmit()
                   }

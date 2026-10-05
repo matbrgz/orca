@@ -83,6 +83,25 @@ describe('WorkspaceKanbanSettingsMenu', () => {
     expect(onChange).toHaveBeenCalledWith(true)
   })
 
+  it('keeps renaming through the Enter that confirms an IME composition', () => {
+    renderMenu()
+    const input = document.querySelector<HTMLInputElement>('input[aria-label="Rename Todo"]')
+    expect(input).not.toBeNull()
+    act(() => input?.focus())
+
+    act(() => {
+      input?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true })
+      )
+    })
+    expect(document.activeElement).toBe(input)
+
+    act(() => {
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    })
+    expect(document.activeElement).not.toBe(input)
+  })
+
   it('keeps adding available for workflows above the former board limit', () => {
     const onAddStatus = vi.fn()
     renderMenu({

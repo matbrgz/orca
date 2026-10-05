@@ -14,6 +14,7 @@ import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
 import type { ExecutionHostId } from '../../../../shared/execution-host'
 import { applyHostRename, getHostDisplayLabelOverride } from './host-rename-remove'
+import { isImeCompositionKeyDown } from '@/lib/ime-composition-keyboard-event'
 
 type HostRenameDialogProps = {
   open: boolean
@@ -78,7 +79,7 @@ export function HostRenameDialog({
             placeholder={derivedLabel}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && !isImeCompositionKeyDown(e)) {
                 e.preventDefault()
                 submit()
               }
