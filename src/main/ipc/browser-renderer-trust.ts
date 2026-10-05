@@ -21,5 +21,6 @@ export function isTrustedBrowserRenderer(sender: Electron.WebContents): boolean 
     }
   }
 
-  return senderUrl.startsWith('file://')
+  // Why: packaged trust is the pinned main window id; any file:// document must not inherit it.
+  return false
 }
