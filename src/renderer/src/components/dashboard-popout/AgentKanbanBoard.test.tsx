@@ -163,6 +163,20 @@ describe('AgentKanbanBoard', () => {
     expect(screen.getByText('3 total')).toBeTruthy()
   })
 
+  it('exposes each column as a region named by its bucket', () => {
+    renderBoard([card({ bucket: 'attention', worktreeName: 'a1' })])
+
+    const regions = screen.getAllByRole('region')
+    expect(regions.map((region) => region.getAttribute('aria-label'))).toEqual([
+      'Needs You',
+      'Working',
+      'Done'
+    ])
+    expect(
+      within(screen.getByRole('region', { name: 'Needs You' })).getByText('a1')
+    ).toBeInTheDocument()
+  })
+
   it('leaves every column border neutral now that cards carry the state color', () => {
     renderBoard([card({ bucket: 'attention' })])
     for (const column of document.querySelectorAll('section')) {
