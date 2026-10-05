@@ -88,6 +88,9 @@ export function registerSpeechHandlers(store: Store): void {
 
   const getDesktopOwner = (senderId: number, sessionId: string): string =>
     `desktop:${senderId}:${sessionId}`
+  // Why: only a stopped/error report removes a session's 'closed' listener, and stopDictation
+  // returns without reporting once the worker is gone; one live listener per owner bounds it.
+  const dictationListenerCleanups = new Map<string, () => void>()
 
   ipcMain.handle(
     'speech:startDictation',
@@ -101,6 +104,7 @@ export function registerSpeechHandlers(store: Store): void {
       const owner = getDesktopOwner(event.sender.id, sessionId)
       const cleanupOnWindowClosed = (): void => {
         windowClosed = true
+        cleanupSessionListener()
         void getSpeechSttService(store)
           .stopDictation(owner)
           .finally(() => {
@@ -112,8 +116,14 @@ export function registerSpeechHandlers(store: Store): void {
       }
       const cleanupSessionListener = (): void => {
         window.off('closed', cleanupOnWindowClosed)
+        if (dictationListenerCleanups.get(owner) === cleanupSessionListener) {
+          dictationListenerCleanups.delete(owner)
+        }
       }
+      // A restart for the same owner supersedes the previous session's listener.
+      dictationListenerCleanups.get(owner)?.()
       window.once('closed', cleanupOnWindowClosed)
+      dictationListenerCleanups.set(owner, cleanupSessionListener)
 
       try {
         // Why: on macOS, the Electron binary needs explicit TCC permission for
