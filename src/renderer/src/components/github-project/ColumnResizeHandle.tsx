@@ -112,6 +112,14 @@ export default function ColumnResizeHandle({
           )
         )
       : 0
+  // Why: minmax(60px, …) keeps the rendered share inside this range even when the stored weight is not.
+  const ariaNowPercent =
+    totalFr > 0
+      ? Math.max(
+          ariaMinPercent,
+          Math.min(100 - ariaMinPercent, Math.round((currentWidth / totalFr) * 100))
+        )
+      : 50
 
   return (
     <div
@@ -119,7 +127,7 @@ export default function ColumnResizeHandle({
       role="separator"
       aria-orientation="vertical"
       tabIndex={0}
-      aria-valuenow={totalFr > 0 ? Math.round((currentWidth / totalFr) * 100) : 50}
+      aria-valuenow={ariaNowPercent}
       aria-valuemin={ariaMinPercent}
       aria-valuemax={100 - ariaMinPercent}
       aria-label={translate(

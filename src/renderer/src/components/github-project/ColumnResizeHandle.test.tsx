@@ -113,6 +113,24 @@ describe('ColumnResizeHandle keyboard resizing', () => {
     expect(handle.getAttribute('aria-valuenow')).toBe('70')
   })
 
+  it.each([
+    // 280fr at 200px: the 60px floor is 84fr, so 220fr (79%) renders capped at 70%.
+    ['a layout narrower than the stored split', 220, 60, 100, '30', '70', '70'],
+    // 160fr at 100px: both 60px floors cannot fit, so the pair is pinned at 50%.
+    ['a pair too narrow to resize', 100, 60, 50, '50', '50', '50']
+  ])(
+    'keeps aria-valuenow inside the announced range for %s',
+    (_case, current, next, cellPx, min, max, now) => {
+      const { handle } = renderHandle({ current, next, currentPx: cellPx, nextPx: cellPx })
+
+      fireEvent.focus(handle)
+
+      expect(handle.getAttribute('aria-valuemin')).toBe(min)
+      expect(handle.getAttribute('aria-valuemax')).toBe(max)
+      expect(handle.getAttribute('aria-valuenow')).toBe(now)
+    }
+  )
+
   it('ignores keys that are not a resize gesture', () => {
     const { onResize, handle } = renderHandle()
 
