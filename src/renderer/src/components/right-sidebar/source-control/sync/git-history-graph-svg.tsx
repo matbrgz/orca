@@ -68,7 +68,8 @@ export function GitHistoryGraphSvg({
             ].join(' ')}
           />
         )
-      } else {
+      } else if (historyItem.parentIds.length > 0) {
+        // Why: a root ends its lane with no first-parent replacement in the output.
         outputSwimlaneIndex += 1
       }
       continue
