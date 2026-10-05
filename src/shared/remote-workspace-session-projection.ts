@@ -41,11 +41,13 @@ function tabToRemote(tab: TerminalTab, worktreePath: string): RemoteWorkspaceTer
     worktreeId: _worktreeId,
     pendingActivationSpawn: _pendingActivationSpawn,
     recovery: _recovery,
+    restoredFromPersistence: _restoredFromPersistence,
     ...rest
   } = tab
   void _worktreeId
   void _pendingActivationSpawn
   void _recovery
+  void _restoredFromPersistence
   return { ...rest, worktreePath }
 }
 

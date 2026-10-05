@@ -252,7 +252,13 @@ export function shouldReplaceTerminalTab(
     // Why: host snapshots are authoritative for mirrored tabs; replace old mirrors even when the next surface still awaits a stream handle, else parity drifts.
     return true
   }
-  if (tab.pendingActivationSpawn && tab.ptyId === null && nextRemotePtyIds.size > 0) {
+  // Why: no identity evidence here — restored rows would all be retired by any unrelated host PTY.
+  if (
+    tab.pendingActivationSpawn &&
+    tab.ptyId === null &&
+    !tab.restoredFromPersistence &&
+    nextRemotePtyIds.size > 0
+  ) {
     return true
   }
   if (!isRuntimeTerminalTabForEnvironment(tab, environmentId)) {
