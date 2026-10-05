@@ -16,6 +16,7 @@ type ExternalAutomationJobsFileOptions = {
   structureLimits?: JsonTextStructureLimits
 }
 
+/** Reads a jobs file under byte, JSON-shape and entry caps so untrusted input can't exhaust memory. */
 export async function readExternalAutomationJobsFile(
   filePath: string,
   options: ExternalAutomationJobsFileOptions
