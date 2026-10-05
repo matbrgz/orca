@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import { getConnectionId } from '@/lib/connection-context'
 import { getRuntimeGitHistory, type RuntimeGitContext } from '@/runtime/runtime-git-client'
+import type { GitHistoryScope } from '../../../../../../shared/git-history'
 import type { GitHistoryPanelState } from './git-history-panel'
 
 const EMPTY_GIT_HISTORY_STATE: GitHistoryPanelState = { status: 'idle' }
+
+function keepTrackedWorktrees<T>(
+  record: Record<string, T>,
+  worktreeMap: ReadonlyMap<string, unknown>
+): Record<string, T> {
+  const kept = Object.entries(record).filter(([key]) => worktreeMap.has(key))
+  return kept.length === Object.keys(record).length ? record : Object.fromEntries(kept)
+}
 
 /**
  * Loads commit history for the active worktree.
@@ -11,6 +20,9 @@ const EMPTY_GIT_HISTORY_STATE: GitHistoryPanelState = { status: 'idle' }
  * State is kept per worktree so switching tabs restores the previous result instead of reloading,
  * and entries are pruned when `worktreeMap` drops a worktree. Fetching is gated on the panel being
  * expanded and visible, and stale responses are discarded by per-worktree request id.
+ *
+ * The branch scope is also kept per worktree for the session. `gitHistoryScope` reports the scope of
+ * the shown result, so an older host that ignores the requested scope reads as `current`.
  *
  * `refreshGitHistoryRef` exists for callers that must refresh from an effect without re-subscribing
  * whenever the callback identity changes.
@@ -37,33 +49,33 @@ export function useSourceControlGitHistory({
   worktreeMap: ReadonlyMap<string, unknown>
 }): {
   gitHistoryState: GitHistoryPanelState
+  gitHistoryScope: GitHistoryScope
+  setGitHistoryScope: (scope: GitHistoryScope) => void
   refreshGitHistory: () => Promise<void>
   refreshGitHistoryRef: RefObject<() => Promise<void>>
 } {
   const [gitHistoryByWorktree, setGitHistoryByWorktree] = useState<
     Record<string, GitHistoryPanelState>
   >({})
+  const [gitHistoryScopeByWorktree, setGitHistoryScopeByWorktree] = useState<
+    Record<string, GitHistoryScope>
+  >({})
   const gitHistoryRequestSeqRef = useRef(0)
   const gitHistoryRequestByWorktreeRef = useRef<Record<string, number>>({})
   const gitHistoryState = activeWorktreeId
     ? (gitHistoryByWorktree[activeWorktreeId] ?? EMPTY_GIT_HISTORY_STATE)
     : EMPTY_GIT_HISTORY_STATE
+  const requestedScope: GitHistoryScope =
+    (activeWorktreeId ? gitHistoryScopeByWorktree[activeWorktreeId] : undefined) ?? 'current'
+  const gitHistoryScope: GitHistoryScope = gitHistoryState.result
+    ? (gitHistoryState.result.scope ?? 'current')
+    : requestedScope
   // Why: the read is routed by owner host, so track it as a stable string — a new settings object alone must not refetch.
   const ownerHostKey = activeRepoSettings?.activeRuntimeEnvironmentId?.trim() ?? ''
 
   useEffect(() => {
-    setGitHistoryByWorktree((prev) => {
-      let changed = false
-      const next: Record<string, GitHistoryPanelState> = {}
-      for (const key of Object.keys(prev)) {
-        if (worktreeMap.has(key)) {
-          next[key] = prev[key]
-        } else {
-          changed = true
-        }
-      }
-      return changed ? next : prev
-    })
+    setGitHistoryByWorktree((prev) => keepTrackedWorktrees(prev, worktreeMap))
+    setGitHistoryScopeByWorktree((prev) => keepTrackedWorktrees(prev, worktreeMap))
     for (const key of Object.keys(gitHistoryRequestByWorktreeRef.current)) {
       if (!worktreeMap.has(key)) {
         delete gitHistoryRequestByWorktreeRef.current[key]
@@ -105,7 +117,7 @@ export function useSourceControlGitHistory({
           worktreePath,
           connectionId
         },
-        { limit: 50, baseRef: compareBaseRef }
+        { limit: 50, baseRef: compareBaseRef, scope: requestedScope }
       )
       if (gitHistoryRequestByWorktreeRef.current[worktreeId] !== requestId) {
         return
@@ -137,8 +149,24 @@ export function useSourceControlGitHistory({
     isFolder,
     isGitHistoryExpanded,
     isGitHistoryVisible,
+    requestedScope,
     worktreePath
   ])
+
+  const setGitHistoryScope = useCallback(
+    (scope: GitHistoryScope): void => {
+      if (!activeWorktreeId || scope === requestedScope) {
+        return
+      }
+      const worktreeId = activeWorktreeId
+      // Why: retire the in-flight read and the shown result so neither is labelled with the new scope.
+      gitHistoryRequestSeqRef.current += 1
+      gitHistoryRequestByWorktreeRef.current[worktreeId] = gitHistoryRequestSeqRef.current
+      setGitHistoryScopeByWorktree((prev) => ({ ...prev, [worktreeId]: scope }))
+      setGitHistoryByWorktree((prev) => ({ ...prev, [worktreeId]: { status: 'loading' } }))
+    },
+    [activeWorktreeId, requestedScope]
+  )
   const refreshGitHistoryRef = useRef(refreshGitHistory)
   // Why: publish in an effect, not the render body — a discarded render must not install its callback. Declared first so the effect below sees the fresh one.
   useEffect(() => {
@@ -159,10 +187,17 @@ export function useSourceControlGitHistory({
     isFolder,
     isGitHistoryExpanded,
     isGitHistoryVisible,
+    requestedScope,
     // Why: same worktree + path can switch owner host; without this the panel keeps the previous host's commits.
     ownerHostKey,
     worktreePath
   ])
 
-  return { gitHistoryState, refreshGitHistory, refreshGitHistoryRef }
+  return {
+    gitHistoryState,
+    gitHistoryScope,
+    setGitHistoryScope,
+    refreshGitHistory,
+    refreshGitHistoryRef
+  }
 }

@@ -21,7 +21,8 @@ export type {
   GitHistoryItemStatistics,
   GitHistoryOptions,
   GitHistoryRefCategory,
-  GitHistoryResult
+  GitHistoryResult,
+  GitHistoryScope
 } from './git-history-types'
 export {
   GIT_HISTORY_BASE_REF_COLOR,
@@ -170,6 +171,7 @@ export async function loadGitHistoryFromExecutor(
   options: GitHistoryOptions = {}
 ): Promise<GitHistoryResult> {
   const limit = clampHistoryLimit(options.limit)
+  const scope = options.scope === 'all' ? 'all' : 'current'
   const headOid = await resolveCommit(git, cwd, 'HEAD')
   if (!headOid) {
     return {
@@ -177,7 +179,8 @@ export async function loadGitHistoryFromExecutor(
       hasIncomingChanges: false,
       hasOutgoingChanges: false,
       hasMore: false,
-      limit
+      limit,
+      scope
     }
   }
 
@@ -192,9 +195,11 @@ export async function loadGitHistoryFromExecutor(
       ? rawBaseRef
       : undefined
 
-  // Why: this panel is scoped to the active workspace. Upstream and base refs
-  // stay as comparison metadata so old workspaces do not list newly fetched upstream/base commits.
-  const historyRevisions = [headOid]
+  // Why: the current scope stays on the active workspace so old workspaces do not list newly
+  // fetched upstream/base commits. The all scope names ref namespaces instead of --all so
+  // refs/stash and provider refs (refs/pull/*) stay out; HEAD covers a detached checkout.
+  const historyRevisions =
+    scope === 'all' ? ['--branches', '--remotes', '--tags', headOid] : [headOid]
 
   let mergeBase: string | undefined
   if (remoteRef?.revision && currentRef.revision && remoteRef.revision !== currentRef.revision) {
@@ -237,6 +242,7 @@ export async function loadGitHistoryFromExecutor(
     hasIncomingChanges,
     hasOutgoingChanges,
     hasMore: parsed.length > limit,
-    limit
+    limit,
+    scope
   }
 }

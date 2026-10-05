@@ -99,7 +99,8 @@ export class GitHandlerReadOperations extends GitHandlerOperationContext {
       worktreePath,
       {
         limit: typeof params.limit === 'number' ? params.limit : undefined,
-        baseRef: typeof params.baseRef === 'string' ? params.baseRef : null
+        baseRef: typeof params.baseRef === 'string' ? params.baseRef : null,
+        scope: params.scope === 'all' ? 'all' : 'current'
       }
     )
     context?.signal?.throwIfAborted()

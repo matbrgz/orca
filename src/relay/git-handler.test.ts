@@ -347,6 +347,41 @@ describe('GitHandler', () => {
     })
   })
 
+  describe('history scope', () => {
+    it('lists side-branch commits only in the all-branches scope and never stash commits', async () => {
+      gitInit(tmpDir)
+      writeFileSync(path.join(tmpDir, 'file.txt'), 'hello')
+      gitCommit(tmpDir, 'initial')
+      const mainBranch = execFileSync('git', ['symbolic-ref', '--short', 'HEAD'], {
+        cwd: tmpDir,
+        encoding: 'utf8'
+      }).trim()
+      execFileSync('git', ['checkout', '-q', '-b', 'side'], { cwd: tmpDir })
+      writeFileSync(path.join(tmpDir, 'side.txt'), 'side')
+      gitCommit(tmpDir, 'side only')
+      execFileSync('git', ['checkout', '-q', mainBranch], { cwd: tmpDir })
+      writeFileSync(path.join(tmpDir, 'file.txt'), 'stashed')
+      execFileSync('git', ['stash', 'push', '-q', '-m', 'stash only'], { cwd: tmpDir })
+
+      type HistoryReply = { items: { subject: string }[]; scope?: string }
+      const current = (await dispatcher.callRequest('git.history', {
+        worktreePath: tmpDir,
+        limit: 10,
+        scope: 'current'
+      })) as HistoryReply
+      const all = (await dispatcher.callRequest('git.history', {
+        worktreePath: tmpDir,
+        limit: 10,
+        scope: 'all'
+      })) as HistoryReply
+
+      expect(current.items.map((item) => item.subject)).toEqual(['initial'])
+      expect(current.scope).toBe('current')
+      expect(all.items.map((item) => item.subject).sort()).toEqual(['initial', 'side only'])
+      expect(all.scope).toBe('all')
+    })
+  })
+
   describe('conflictOperation', () => {
     it('returns unknown for normal repo', async () => {
       gitInit(tmpDir)
