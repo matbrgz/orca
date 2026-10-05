@@ -65,6 +65,7 @@ function getLabelColorIdentifier(
   return undefined
 }
 
+/** Commit node color; a root keeps its input lane since its output slot holds another lane. */
 function resolveNodeColor(
   historyItemId: string,
   hasParents: boolean,
@@ -108,6 +109,7 @@ export function compareGitHistoryRefs(
   return order(ref1) - order(ref2)
 }
 
+/** Lays out per-row swimlanes and ref colors for a topo-ordered history, newest first. */
 export function buildGitHistoryViewModels(
   historyItems: GitHistoryItem[],
   colorMap = new Map<string, GitHistoryGraphColorId | undefined>(),
@@ -220,6 +222,7 @@ export function getGitHistoryItemLaneIndex(viewModel: GitHistoryItemViewModel): 
   return inputIndex !== -1 ? inputIndex : viewModel.inputSwimlanes.length
 }
 
+/** Node color for a row, shared by the SVG renderer and ref coloring so the two never diverge. */
 export function getGitHistoryItemColor(viewModel: GitHistoryItemViewModel): GitHistoryGraphColorId {
   const historyItem = viewModel.historyItem
   return resolveNodeColor(

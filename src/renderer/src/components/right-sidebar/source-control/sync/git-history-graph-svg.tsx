@@ -38,6 +38,7 @@ function GraphPath({
   )
 }
 
+/** Draws one history row's lane edges and commit node from its input/output swimlanes. */
 export function GitHistoryGraphSvg({
   viewModel
 }: {

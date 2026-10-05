@@ -5,10 +5,12 @@ import type { GitHistoryItem } from '../../../../../../shared/git-history'
 import { buildGitHistoryViewModels } from '../../../../../../shared/git-history-graph'
 import { GitHistoryGraphSvg } from './git-history-graph-svg'
 
+/** Minimal history item whose subject, message and display id all reuse its id. */
 function item(id: string, parentIds: string[]): GitHistoryItem {
   return { id, parentIds, subject: id, message: id, displayId: id, references: [] }
 }
 
+/** Extracts every SVG path `d` attribute from rendered markup, in document order. */
 function pathsOf(markup: string): string[] {
   return [...markup.matchAll(/ d="([^"]+)"/g)].map((match) => match[1]!)
 }
