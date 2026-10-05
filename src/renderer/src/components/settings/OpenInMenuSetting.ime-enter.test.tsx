@@ -7,6 +7,7 @@ import { OpenInMenuSetting } from './OpenInMenuSetting'
 
 afterEach(cleanup)
 
+/** Asserts the IME-confirm Enter keeps focus in the field while a plain Enter commits and blurs it. */
 function expectEnterRespectsComposition(input: HTMLElement): void {
   act(() => input.focus())
   fireImeConfirmEnter(input)

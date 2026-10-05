@@ -79,6 +79,7 @@ export function shouldCommitOpenInApplicationsDraft(applications: OpenInApplicat
   })
 }
 
+/** One Open In app row with inline label/command editing that commits on blur or a non-IME Enter. */
 function OpenInMenuRow({
   application,
   editing,

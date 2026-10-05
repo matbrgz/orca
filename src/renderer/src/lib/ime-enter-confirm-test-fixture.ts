@@ -8,6 +8,7 @@ export function fireImeConfirmEnter(input: HTMLElement): void {
   fireEvent.keyDown(input, { key: 'Enter', keyCode: 13 })
 }
 
+/** Fires an Enter with no composition in progress. */
 export function firePlainEnter(input: HTMLElement): void {
   fireEvent.keyDown(input, { key: 'Enter', keyCode: 13 })
 }

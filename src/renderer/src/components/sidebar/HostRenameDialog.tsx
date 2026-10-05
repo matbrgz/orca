@@ -27,6 +27,7 @@ type HostRenameDialogProps = {
   derivedLabel: string
 }
 
+/** Renames a host's display label via a settings override; an empty value restores the derived label. */
 export function HostRenameDialog({
   open,
   onOpenChange,

@@ -31,6 +31,7 @@ type WorkspaceKanbanSettingsMenuProps = {
   onAddStatus: () => void
 }
 
+/** Board settings dropdown for renaming, reordering, adding and removing workspace statuses. */
 export default function WorkspaceKanbanSettingsMenu({
   workspaceStatuses,
   syncTaskStatusFromWorkspaceBoard,

@@ -19,6 +19,7 @@ import {
   useImeEnterGestureOwnership
 } from '@/lib/ime-composition-keyboard-event'
 
+/** Body of a GitHub Project item dialog: inline-editable title plus labels, assignees and comments. */
 export function SlugDialogBody({
   projectOrigin,
   sourceSettings,
