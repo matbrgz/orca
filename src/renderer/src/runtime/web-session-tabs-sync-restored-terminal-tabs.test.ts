@@ -21,6 +21,7 @@ vi.mock('../store', () => ({
   }
 }))
 
+/** A persisted remote tab whose PTY id is stale after restart. */
 function makePersistedRow(id: string, title: string, sortOrder: number): TerminalTab {
   return {
     id,
@@ -34,6 +35,7 @@ function makePersistedRow(id: string, title: string, sortOrder: number): Termina
   }
 }
 
+/** Runs real session hydration so the rows carry the exact restored placeholder shape. */
 function hydrateRestoredRows(): TerminalTab[] {
   const persisted = [
     makePersistedRow('restored-tab-a', 'build', 0),

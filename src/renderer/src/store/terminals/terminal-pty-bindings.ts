@@ -12,11 +12,13 @@ import { omitUnverifiedPtyLossTabIds } from './terminal-unverified-pty-loss'
 import { clearWorktreeSleepIntent } from '@/lib/worktree-sleep-intent'
 import { omitDisownedPtyIds } from './terminal-disowned-pty-sources'
 
+/** Builds the store action that records which PTY now backs a terminal tab or split pane. */
 export function createTerminalPtyBindingActions(
   set: TerminalStoreSet,
   get: TerminalStoreGet
 ): Pick<TerminalSlice, 'updateTabPtyId'> {
   return {
+    /** Binds a pane's PTY to its tab, consuming one activation suppression and ending restored provenance. */
     updateTabPtyId: (tabId, ptyId, replacedPtyId, directSshRetryAttemptId) => {
       // Why: final guard preventing a late caller from recreating retired tab maps (async spawn owners still do their own provider teardown).
       if (!isTerminalTabPresent(get(), tabId)) {

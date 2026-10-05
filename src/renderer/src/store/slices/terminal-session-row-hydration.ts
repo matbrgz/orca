@@ -195,6 +195,7 @@ function resolveCanonicalPtyClaim(
   }
 }
 
+/** Rebuilds a hydrated row as a pending, restored placeholder with its canonical labels reattached. */
 function restoreCanonicalMetadata(
   row: TerminalTab,
   index: number,

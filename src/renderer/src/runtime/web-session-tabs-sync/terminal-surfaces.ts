@@ -236,6 +236,7 @@ export function chooseRemoteTerminalLayout(
   })
 }
 
+/** Whether a host snapshot retires this local tab; restored rows are kept until they bind a PTY. */
 export function shouldReplaceTerminalTab(
   tab: TerminalTab,
   environmentId: string,
