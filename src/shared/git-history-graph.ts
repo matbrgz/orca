@@ -106,25 +106,28 @@ export function buildGitHistoryViewModels(
   let historyItemsById: Map<string, GitHistoryItem> | undefined
 
   for (const historyItem of historyItems) {
-    const kind = historyItem.id === currentRef?.revision ? 'HEAD' : 'node'
+    // Why: read once; the lane loop below would otherwise re-read it per in-flight lane.
+    const historyItemId = historyItem.id
+    const kind = historyItemId === currentRef?.revision ? 'HEAD' : 'node'
     const inputSwimlanes = (viewModels.at(-1)?.outputSwimlanes ?? []).map(cloneNode)
     const outputSwimlanes: GitHistoryGraphNode[] = []
     let firstParentAdded = false
 
-    if (historyItem.parentIds.length > 0) {
-      for (const node of inputSwimlanes) {
-        if (node.id === historyItem.id) {
-          if (!firstParentAdded) {
-            outputSwimlanes.push({
-              id: historyItem.parentIds[0]!,
-              color: getLabelColorIdentifier(historyItem, colorMap) ?? node.color
-            })
-            firstParentAdded = true
-          }
-          continue
+    // Why: a root commit ends only its own lane; other lanes stay in flight when history has a
+    // second root (unrelated-history merges, orphan branches).
+    const firstParentId = historyItem.parentIds[0]
+    for (const node of inputSwimlanes) {
+      if (node.id === historyItemId) {
+        if (!firstParentAdded && firstParentId !== undefined) {
+          outputSwimlanes.push({
+            id: firstParentId,
+            color: getLabelColorIdentifier(historyItem, colorMap) ?? node.color
+          })
+          firstParentAdded = true
         }
-        outputSwimlanes.push(cloneNode(node))
+        continue
       }
+      outputSwimlanes.push(cloneNode(node))
     }
 
     for (let index = firstParentAdded ? 1 : 0; index < historyItem.parentIds.length; index += 1) {
@@ -162,7 +165,7 @@ export function buildGitHistoryViewModels(
       .map((ref) => {
         let color = colorMap.get(ref.id)
         if (colorMap.has(ref.id) && color === undefined) {
-          const inputIndex = inputSwimlanes.findIndex((node) => node.id === historyItem.id)
+          const inputIndex = inputSwimlanes.findIndex((node) => node.id === historyItemId)
           const circleIndex = inputIndex !== -1 ? inputIndex : inputSwimlanes.length
           color =
             circleIndex < outputSwimlanes.length

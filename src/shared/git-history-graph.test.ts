@@ -93,6 +93,22 @@ describe('git history graph model', () => {
     expect(getGitHistoryMergeParentLaneIndex(viewModels[0]!, 'B')).toBe(1)
   })
 
+  it('keeps other lanes open past a second root commit', () => {
+    // M merges an unrelated history (V is its root), so V ends while A's lane is still in flight.
+    const viewModels = buildGitHistoryViewModels([
+      item('M', ['A', 'V']),
+      item('V', []),
+      item('A', ['B']),
+      item('B', [])
+    ])
+
+    expect(viewModels[1]!.inputSwimlanes.map((node) => node.id)).toEqual(['A', 'V'])
+    expect(viewModels[1]!.outputSwimlanes.map((node) => node.id)).toEqual(['A'])
+    expect(viewModels[2]!.inputSwimlanes.map((node) => node.id)).toEqual(['A'])
+    expect(viewModels[2]!.outputSwimlanes.map((node) => node.id)).toEqual(['B'])
+    expect(viewModels[3]!.outputSwimlanes).toEqual([])
+  })
+
   it('keeps the first matching parent when history contains duplicate ids', () => {
     const headRef = branch('head', 'merge')
     const firstParentRef = branch('first', 'duplicate')
@@ -136,7 +152,7 @@ describe('git history graph model', () => {
     const historyItems: GitHistoryItem[] = []
     for (let index = 0; index < mergeCount; index += 1) {
       historyItems.push(trackedItem(`merge-${index}`, [`missing-${index}`, targetId], reads))
-      // Reset swimlanes between merges so this measures parent lookup, not lane growth.
+      // Root rows between merges: lanes keep growing, so this also checks lane width adds no reads.
       historyItems.push(trackedItem(`leaf-${index}`, [], reads))
     }
     historyItems.push(trackedItem(targetId, [], reads))
